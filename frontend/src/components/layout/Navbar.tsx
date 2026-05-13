@@ -1,0 +1,67 @@
+import { useStore } from '../../store';
+
+export const Navbar = () => {
+  const { activeSection, setActiveSection } = useStore();
+
+  return (
+    <nav
+      className="glass-nav"
+      style={{ position: 'sticky', top: 0, zIndex: 50, width: '100%', borderBottom: '1px solid var(--border)' }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, padding: '0 24px' }}>
+
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <img src="/favicon.svg" width="34" height="34" style={{ flexShrink: 0 }} />
+          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '0.02em', lineHeight: 1, userSelect: 'none' }}>
+            <span style={{ color: 'var(--text-1)' }}>TRADE</span><span style={{ color: 'var(--blue)' }}>VAULT</span>
+          </span>
+        </div>
+
+        {/* Market toggle */}
+        <div className="pill-group">
+          <button
+            className={`pill-tab ${activeSection === 'forex' ? 'active' : ''}`}
+            onClick={() => setActiveSection('forex')}
+            style={activeSection === 'forex' ? { color: '#60a5fa' } : {}}
+          >
+            Forex Prop
+          </button>
+          <button
+            className={`pill-tab ${activeSection === 'futures' ? 'active' : ''}`}
+            onClick={() => setActiveSection('futures')}
+            style={activeSection === 'futures' ? { color: '#fbbf24' } : {}}
+          >
+            US Futures
+          </button>
+        </div>
+
+        {/* Live dot */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 7,
+          padding: '6px 12px', borderRadius: 8,
+          background: 'rgba(16,185,129,0.08)',
+          border: '1px solid rgba(16,185,129,0.18)',
+        }}>
+          <span style={{ position: 'relative', display: 'flex', width: 7, height: 7 }}>
+            <span style={{
+              position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981',
+              animation: 'ping 1.2s cubic-bezier(0,0,0.2,1) infinite', opacity: 0.6,
+            }} />
+            <span style={{ position: 'relative', width: 7, height: 7, borderRadius: '50%', background: '#10b981' }} />
+          </span>
+          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#10b981', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            Live
+          </span>
+        </div>
+
+      </div>
+
+      <style>{`
+        @keyframes ping {
+          75%,100% { transform: scale(2); opacity: 0; }
+        }
+      `}</style>
+    </nav>
+  );
+};
