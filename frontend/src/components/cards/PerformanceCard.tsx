@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import { useStore } from '../../store';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
@@ -51,6 +52,7 @@ const PnlTip = ({ active, payload, label }: any) => {
 
 export const PerformanceCard = () => {
   const [range, setRange] = useState<Range>('1M');
+  const isMobile = useIsMobile();
   const days = DAYS[range];
   const { viewAccountId } = useStore();
   const { data: analytics, isLoading: al } = useAnalytics(viewAccountId, undefined, days);
@@ -95,7 +97,7 @@ export const PerformanceCard = () => {
       </div>
 
       {/* ── Stats strip ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)', borderBottom: '1px solid var(--border)' }}>
         {[
           {
             label: 'Net PnL',
@@ -130,7 +132,8 @@ export const PerformanceCard = () => {
         ].map(({ label, value, color }, i, arr) => (
           <div key={label} style={{
             padding: '11px 10px',
-            borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+            borderRight: isMobile ? (i % 3 < 2 ? '1px solid var(--border)' : 'none') : (i < arr.length - 1 ? '1px solid var(--border)' : 'none'),
+            borderBottom: isMobile && i < 3 ? '1px solid var(--border)' : 'none',
             display: 'flex', flexDirection: 'column', gap: 4,
           }}>
             <span className="label" style={{ fontSize: '0.58rem' }}>{label}</span>
@@ -203,7 +206,7 @@ export const PerformanceCard = () => {
         </div>
 
         {/* ── Secondary metrics ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 8 }}>
           {[
             { label: 'Avg Win',     value: `+$${(analytics?.avg_win     ?? 0).toFixed(0)}`, color: 'var(--green)' },
             { label: 'Avg Loss',    value: `-$${Math.abs(analytics?.avg_loss    ?? 0).toFixed(0)}`, color: 'var(--red)' },

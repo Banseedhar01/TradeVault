@@ -1,21 +1,25 @@
 import { useStore } from '../../store';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 export const Navbar = () => {
   const { activeSection, setActiveSection } = useStore();
+  const isMobile = useIsMobile();
 
   return (
     <nav
       className="glass-nav"
       style={{ position: 'sticky', top: 0, zIndex: 50, width: '100%', borderBottom: '1px solid var(--border)' }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, padding: '0 24px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, padding: isMobile ? '0 16px' : '0 24px' }}>
 
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="/favicon.svg" width="34" height="34" style={{ flexShrink: 0 }} />
-          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '0.02em', lineHeight: 1, userSelect: 'none' }}>
-            <span style={{ color: 'var(--text-1)' }}>TRADE</span><span style={{ color: 'var(--blue)' }}>VAULT</span>
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <img src="/favicon.svg" width={isMobile ? 28 : 34} height={isMobile ? 28 : 34} style={{ flexShrink: 0 }} />
+          {!isMobile && (
+            <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '0.02em', lineHeight: 1, userSelect: 'none' }}>
+              <span style={{ color: 'var(--text-1)' }}>TRADE</span><span style={{ color: 'var(--blue)' }}>VAULT</span>
+            </span>
+          )}
         </div>
 
         {/* Market toggle */}
@@ -25,21 +29,21 @@ export const Navbar = () => {
             onClick={() => setActiveSection('forex')}
             style={activeSection === 'forex' ? { color: '#60a5fa' } : {}}
           >
-            Forex Prop
+            {isMobile ? 'Forex' : 'Forex Prop'}
           </button>
           <button
             className={`pill-tab ${activeSection === 'futures' ? 'active' : ''}`}
             onClick={() => setActiveSection('futures')}
             style={activeSection === 'futures' ? { color: '#fbbf24' } : {}}
           >
-            US Futures
+            {isMobile ? 'Futures' : 'US Futures'}
           </button>
         </div>
 
         {/* Live dot */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 7,
-          padding: '6px 12px', borderRadius: 8,
+          padding: isMobile ? '6px 10px' : '6px 12px', borderRadius: 8,
           background: 'rgba(16,185,129,0.08)',
           border: '1px solid rgba(16,185,129,0.18)',
         }}>
@@ -50,9 +54,11 @@ export const Navbar = () => {
             }} />
             <span style={{ position: 'relative', width: 7, height: 7, borderRadius: '50%', background: '#10b981' }} />
           </span>
-          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#10b981', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            Live
-          </span>
+          {!isMobile && (
+            <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#10b981', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              Live
+            </span>
+          )}
         </div>
 
       </div>

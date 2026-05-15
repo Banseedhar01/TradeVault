@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useCalendarData } from '../../hooks/useAnalytics';
 import { useTrades, useDeleteTrade } from '../../hooks/useTrades';
 import { useStore } from '../../store';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import { Button } from '../ui/Button';
 import { Trade } from '../../types/trade';
 
@@ -81,6 +82,7 @@ export const TradingCalendarCard = () => {
   const [hovered, setHovered]     = useState<{ day: number; entry: DayEntry } | null>(null);
   const [clickedDate, setClicked] = useState<string | null>(null);
   const { viewAccountId }         = useStore();
+  const isMobile                  = useIsMobile();
 
   const { data, isLoading } = useCalendarData(viewAccountId, undefined, cur.getFullYear(), cur.getMonth() + 1);
   const { data: allTrades } = useTrades();
@@ -203,7 +205,7 @@ export const TradingCalendarCard = () => {
           <>
             {/* ── Monthly stats strip ── */}
             {monthStats && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', borderBottom: '1px solid var(--border)' }}>
                 {[
                   { label: 'Month P&L',  value: fmtPnL(monthStats.totalPnL),              color: monthStats.totalPnL >= 0 ? 'var(--green)' : 'var(--red)' },
                   { label: 'Win Rate',   value: `${monthStats.winRate.toFixed(1)}%`,        color: monthStats.winRate >= 50 ? 'var(--green)' : 'var(--red)' },
@@ -212,7 +214,8 @@ export const TradingCalendarCard = () => {
                 ].map(({ label, value, color }, i, arr) => (
                   <div key={label} style={{
                     padding: '10px 14px',
-                    borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+                    borderRight: isMobile ? (i % 2 === 0 ? '1px solid var(--border)' : 'none') : (i < arr.length - 1 ? '1px solid var(--border)' : 'none'),
+                    borderBottom: isMobile && i < 2 ? '1px solid var(--border)' : 'none',
                     display: 'flex', flexDirection: 'column', gap: 3,
                   }}>
                     <span style={{ fontSize: '0.58rem', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</span>

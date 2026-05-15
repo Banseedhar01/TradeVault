@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import { useTrades, useDeleteTrade } from '../../hooks/useTrades';
 import { useAccounts } from '../../hooks/useAccounts';
 import { useFirms } from '../../hooks/useFirms';
@@ -49,6 +50,7 @@ export const TradeLogCard = () => {
   const { data: firms }    = useFirms();
   const { setAddTradeOpen, activeSection, viewAccountId, accountStatusFilter } = useStore();
   const deleteTrade = useDeleteTrade();
+  const isMobile = useIsMobile();
   const [filter, setFilter]         = useState<Filter>('all');
   const [search, setSearch]         = useState('');
   const [page, setPage]             = useState(1);
@@ -202,7 +204,7 @@ export const TradeLogCard = () => {
           {/* ── Summary strip ── */}
           {summary && (
             <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)',
+              display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)',
               gap: 0, borderBottom: '1px solid var(--border)',
             }}>
               {[
@@ -214,12 +216,13 @@ export const TradeLogCard = () => {
                 { label: 'Total',     value: String(summary.total),             color: 'var(--text-1)' },
               ].map(({ label, value, color }, i, arr) => (
                 <div key={label} style={{
-                  padding: '14px 16px',
-                  borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+                  padding: isMobile ? '10px 12px' : '14px 16px',
+                  borderRight: isMobile ? (i % 3 < 2 ? '1px solid var(--border)' : 'none') : (i < arr.length - 1 ? '1px solid var(--border)' : 'none'),
+                  borderBottom: isMobile && i < 3 ? '1px solid var(--border)' : 'none',
                   display: 'flex', flexDirection: 'column', gap: 4,
                 }}>
                   <span className="label">{label}</span>
-                  <span style={{ fontSize: '1.0625rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1, opacity: 0.75 }}>
+                  <span style={{ fontSize: isMobile ? '0.875rem' : '1.0625rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1, opacity: 0.75 }}>
                     {value}
                   </span>
                 </div>
@@ -230,8 +233,8 @@ export const TradeLogCard = () => {
           {/* ── Filter + search bar ── */}
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '10px 16px', borderBottom: '1px solid var(--border)', gap: 12,
-            background: 'var(--inset)',
+            padding: '10px 16px', borderBottom: '1px solid var(--border)', gap: 8,
+            background: 'var(--inset)', flexWrap: 'wrap',
           }}>
             {/* Filter pills */}
             <div style={{ display: 'flex', gap: 4 }}>
@@ -268,7 +271,7 @@ export const TradeLogCard = () => {
                   background: 'var(--surface)', border: '1px solid var(--border)',
                   borderRadius: 7, padding: '5px 10px 5px 28px',
                   fontSize: '0.75rem', color: 'var(--text-1)', outline: 'none',
-                  width: 170, transition: 'border-color 150ms',
+                  width: isMobile ? '100%' : 170, transition: 'border-color 150ms',
                 }}
                 onFocus={e => (e.target.style.borderColor = 'var(--border-focus)')}
                 onBlur={e  => (e.target.style.borderColor = 'var(--border)')}

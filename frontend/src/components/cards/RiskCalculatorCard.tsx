@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../../store';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 type RiskMode = 'pct' | 'amt';
 type TpMode   = 'ratio' | 'price';
@@ -43,6 +44,7 @@ const Metric = ({ label, value, color = 'var(--text-1)', large = false }: {
 export const RiskCalculatorCard = () => {
   const { activeSection } = useStore();
   const isForex = activeSection === 'forex';
+  const isMobile = useIsMobile();
 
   const [riskMode, setRiskMode] = useState<RiskMode>('pct');
   const [tpMode,   setTpMode]   = useState<TpMode>('ratio');
@@ -111,7 +113,7 @@ export const RiskCalculatorCard = () => {
         </span>
       </div>
 
-      <div className="card-body" style={{ flexDirection: 'row', gap: 20, padding: 20, alignItems: 'flex-start' }}>
+      <div className="card-body" style={{ flexDirection: isMobile ? 'column' : 'row', gap: 20, padding: 20, alignItems: 'flex-start' }}>
 
         {/* ── Inputs ── */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -151,7 +153,7 @@ export const RiskCalculatorCard = () => {
           </div>
 
           {/* Entry / Stop */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 8 }}>
             {isForex ? (
               <>
                 <Field label="Entry" value={fx.entry} step={0.0001} decimals={4}
@@ -236,10 +238,10 @@ export const RiskCalculatorCard = () => {
         </div>
 
         {/* Vertical divider */}
-        <div style={{ width: 1, background: 'var(--border)', flexShrink: 0, alignSelf: 'stretch' }} />
+        {!isMobile && <div style={{ width: 1, background: 'var(--border)', flexShrink: 0, alignSelf: 'stretch' }} />}
 
         {/* ── Results ── */}
-        <div style={{ flex: '0 0 140px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ flex: isMobile ? 'none' : '0 0 140px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <span className="label" style={{ marginBottom: 2 }}>Output</span>
 
           {/* Direction badge */}

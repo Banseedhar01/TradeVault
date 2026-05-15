@@ -5,6 +5,7 @@ import { Badge } from '../ui/Badge';
 import { ProgressBar } from '../ui/ProgressBar';
 import { useStore } from '../../store';
 import { useDeleteAccount } from '../../hooks/useAccounts';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface PropFirmCardProps {
   firm: PropFirm;
@@ -28,6 +29,7 @@ const STATUS_LABEL: Record<string, string> = {
 export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
   const { setAddAccountOpen, setSelectedFirmId, activeSection, setDetailAccountId } = useStore();
   const deleteAccount = useDeleteAccount();
+  const isMobile = useIsMobile();
   const [isHovered, setIsHovered]     = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -58,7 +60,7 @@ export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
   // ── Empty state ────────────────────────────────────────────────
   if (!account) {
     return (
-      <div className="card" style={{ flexShrink: 0, width: 288 }}>
+      <div className="card" style={{ flexShrink: 0, width: isMobile ? '82vw' : 288 }}>
         <div style={{ height: 3, background: `linear-gradient(90deg, ${accent}, ${accent}80)` }} />
         <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-1)' }}>{firm.name}</div>
@@ -103,7 +105,7 @@ export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
       onClick={() => setDetailAccountId(account.id)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => { setIsHovered(false); setConfirmDelete(false); }}
-      style={{ flexShrink: 0, width: 288, cursor: 'pointer', transition: 'box-shadow 150ms, transform 120ms',
+      style={{ flexShrink: 0, width: isMobile ? '82vw' : 288, cursor: 'pointer', transition: 'box-shadow 150ms, transform 120ms',
         boxShadow: isHovered ? `0 0 0 1px ${accentBorder}, 0 8px 24px rgba(0,0,0,0.25)` : undefined,
         transform: isHovered ? 'translateY(-1px)' : undefined,
       }}
@@ -239,7 +241,7 @@ export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
 
         {/* ── 4-metric strip ── */}
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
+          display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
           borderRadius: 8, overflow: 'hidden',
           border: '1px solid var(--border)',
         }}>
@@ -248,10 +250,11 @@ export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
             { label: 'Max Loss', value: `$${stage.max_loss.toLocaleString()}`,       color: '#ef4444' },
             { label: 'Daily Loss', value: `$${stage.max_daily_loss.toLocaleString()}`, color: '#f59e0b' },
             { label: 'Split',   value: `${stage.profit_split}%`,                    color: '#a1a1aa' },
-          ].map(({ label, value, color }, i, arr) => (
+          ].map(({ label, value, color }, i) => (
             <div key={label} style={{
               padding: '8px 0', textAlign: 'center',
-              borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+              borderRight: isMobile ? (i % 2 === 0 ? '1px solid var(--border)' : 'none') : (i < 3 ? '1px solid var(--border)' : 'none'),
+              borderBottom: isMobile && i < 2 ? '1px solid var(--border)' : 'none',
               background: 'var(--inset)',
             }}>
               <div style={{ fontSize: '0.78rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1, opacity: 0.72 }}>

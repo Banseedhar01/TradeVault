@@ -8,6 +8,7 @@ import { AddTradeForm } from '../forms/AddTradeForm';
 import { useStore } from '../../store';
 import { useAccounts } from '../../hooks/useAccounts';
 import { useFirms } from '../../hooks/useFirms';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 const STATUS_COLOR: Record<string, string> = {
   passed:      '#10b981',
@@ -27,6 +28,7 @@ export const AccountDetailPage = () => {
   const { detailAccountId, setDetailAccountId } = useStore();
   const { data: accounts } = useAccounts();
   const { data: firms }    = useFirms();
+  const isMobile           = useIsMobile();
 
   const account = accounts?.find(a => a.id === detailAccountId);
   const firm    = firms?.find(f => f.id === account?.firm_id);
@@ -55,7 +57,7 @@ export const AccountDetailPage = () => {
 
   return (
     <Layout>
-      <div style={{ width: '100%', padding: '0 24px 40px', boxSizing: 'border-box' }}>
+      <div style={{ width: '100%', padding: isMobile ? '0 16px 32px' : '0 24px 40px', boxSizing: 'border-box' }}>
 
         {/* ── Sticky back bar ── */}
         <div style={{
@@ -100,7 +102,7 @@ export const AccountDetailPage = () => {
             padding: '18px 22px 16px',
             background: `linear-gradient(160deg, ${accentDim} 0%, transparent 50%)`,
             borderBottom: '1px solid var(--border)',
-            display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap',
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap',
           }}>
             {/* Left: identity */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
@@ -141,7 +143,7 @@ export const AccountDetailPage = () => {
             </div>
 
             {/* Right: stage pills + P&L callout */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 260 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: isMobile ? 'auto' : 260, width: isMobile ? '100%' : 'auto' }}>
               {/* Stage pills */}
               <div style={{ display: 'flex', gap: 3, background: 'var(--inset)', borderRadius: 7, padding: 3, border: '1px solid var(--border)' }}>
                 {account.stages.map((s, i) => {
@@ -201,7 +203,7 @@ export const AccountDetailPage = () => {
 
           {/* ── 4-metric strip ── */}
           <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
+            display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
             borderBottom: '1px solid var(--border)',
           }}>
             {[
@@ -246,7 +248,7 @@ export const AccountDetailPage = () => {
         {/* ── Data cards ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <TradeLogCard />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
             <TradingCalendarCard />
             <PerformanceCard />
           </div>

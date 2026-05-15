@@ -13,11 +13,13 @@ import { AccountDetailPage } from './components/pages/AccountDetailPage'
 import { useStore } from './store'
 import { useFirms } from './hooks/useFirms'
 import { useAccounts } from './hooks/useAccounts'
+import { useIsMobile } from './hooks/useIsMobile'
 
 function App() {
   const { activeSection, detailAccountId, setAddFirmOpen } = useStore()
   const { data: firms, isLoading: firmsLoading } = useFirms()
   const { data: accounts } = useAccounts()
+  const isMobile = useIsMobile()
 
   const sectionFirms = firms?.filter(f => f.market_type === activeSection) || []
   const sectionAccounts = accounts?.filter(a =>
@@ -30,7 +32,7 @@ function App() {
 
   return (
     <Layout>
-      <div style={{ width: '100%', padding: '28px 24px 40px', boxSizing: 'border-box' }}>
+      <div style={{ width: '100%', padding: isMobile ? '16px 16px 32px' : '28px 24px 40px', boxSizing: 'border-box' }}>
 
         {/* ── Prop Firm Row ── */}
         <section style={{ marginBottom: 28 }}>
@@ -89,7 +91,7 @@ function App() {
         {/* ── Bento Grid ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Row 1: Market Clock (1/3) + Risk Calculator (2/3) */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 2fr', gap: 16 }}>
             <MarketClockCard />
             <RiskCalculatorCard />
           </div>
@@ -98,7 +100,7 @@ function App() {
           <TradeLogCard />
 
           {/* Row 3: Calendar + Performance — equal width */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
             <TradingCalendarCard />
             <PerformanceCard />
           </div>
@@ -106,12 +108,6 @@ function App() {
 
       </div>
 
-      <style>{`
-        @media (max-width: 860px) {
-          .bento { grid-template-columns: 1fr !important; }
-          .bento > * { grid-column: auto !important; }
-        }
-      `}</style>
 
       <AddFirmForm />
       <AddAccountForm />
