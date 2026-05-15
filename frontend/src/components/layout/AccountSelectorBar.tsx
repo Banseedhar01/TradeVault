@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useAccounts } from '../../hooks/useAccounts';
 import { useFirms } from '../../hooks/useFirms';
 import { useStore } from '../../store';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import { deriveAccountStatus, matchesStatusFilter, StatusFilter, AccountStatus } from '../../utils/account';
 
 const STATUS_CFG: Record<AccountStatus, { color: string; label: string; pulse: boolean }> = {
@@ -21,6 +22,7 @@ export const AccountSelectorBar = () => {
     viewAccountId,        setViewAccountId,
     accountStatusFilter,  setAccountStatusFilter,
   } = useStore();
+  const isMobile = useIsMobile();
 
   // All accounts in this section — must be before any early return
   const sectionAccounts = useMemo(() => {
@@ -57,7 +59,7 @@ export const AccountSelectorBar = () => {
   ];
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 0 16px', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, rowGap: 8, padding: '0 0 16px', flexWrap: 'wrap' }}>
 
       {/* Label */}
       <span style={{
@@ -114,7 +116,7 @@ export const AccountSelectorBar = () => {
       </div>
 
       {/* Separator */}
-      <div style={{ width: 1, height: 20, background: 'var(--border)', flexShrink: 0 }} />
+      {!isMobile && <div style={{ width: 1, height: 20, background: 'var(--border)', flexShrink: 0 }} />}
 
       {/* ── Individual account pills ── */}
       {visibleAccounts.length === 0 ? (

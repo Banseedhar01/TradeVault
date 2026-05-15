@@ -37,7 +37,7 @@ const calcRR = (t: Trade): string | null => {
 const Stat = ({ label, value, color = 'var(--text-1)' }: { label: string; value: string; color?: string }) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
     <span className="label">{label}</span>
-    <span style={{ fontSize: '1.125rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1 }}>
+    <span style={{ fontSize: '0.9375rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1 }}>
       {value}
     </span>
   </div>
@@ -232,9 +232,11 @@ export const TradeLogCard = () => {
 
           {/* ── Filter + search bar ── */}
           <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            display: 'flex', alignItems: isMobile ? 'flex-start' : 'center',
+            flexDirection: isMobile ? 'column' : 'row',
+            justifyContent: 'space-between',
             padding: '10px 16px', borderBottom: '1px solid var(--border)', gap: 8,
-            background: 'var(--inset)', flexWrap: 'wrap',
+            background: 'var(--inset)',
           }}>
             {/* Filter pills */}
             <div style={{ display: 'flex', gap: 4 }}>
@@ -257,7 +259,7 @@ export const TradeLogCard = () => {
             </div>
 
             {/* Search */}
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: isMobile ? '100%' : 'auto' }}>
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
                 style={{ position: 'absolute', left: 10, color: 'var(--text-3)', pointerEvents: 'none' }}>
                 <circle cx="5" cy="5" r="3.5" stroke="currentColor" strokeWidth="1.2"/>
@@ -305,10 +307,10 @@ export const TradeLogCard = () => {
                     <th style={{ ...TH }}>Date</th>
                     <th style={{ ...TH }}>Instrument</th>
                     <th style={{ ...TH }}>Side</th>
-                    <th style={{ ...TH }}>Entry</th>
-                    <th style={{ ...TH }}>Exit</th>
-                    <th style={{ ...TH }}>Size</th>
-                    <th style={{ ...TH }}>RR</th>
+                    {!isMobile && <th style={{ ...TH }}>Entry</th>}
+                    {!isMobile && <th style={{ ...TH }}>Exit</th>}
+                    {!isMobile && <th style={{ ...TH }}>Size</th>}
+                    {!isMobile && <th style={{ ...TH }}>RR</th>}
                     <th style={{ ...TH }}>PnL</th>
                     <th style={{ ...TH }}>Status</th>
                     <th style={{ width: 60, padding: '10px 14px', borderBottom: '1px solid var(--border)' }} />
@@ -339,24 +341,32 @@ export const TradeLogCard = () => {
                             color: trade.direction === 'long' ? 'var(--green)' : 'var(--red)',
                           }}>
                             {trade.direction === 'long' ? '▲' : '▼'}
-                            {trade.direction === 'long' ? 'Long' : 'Short'}
+                            {!isMobile && (trade.direction === 'long' ? 'Long' : 'Short')}
                           </span>
                         </td>
-                        <td style={{ ...TD, color: 'var(--text-2)', fontVariantNumeric: 'tabular-nums' }}>
-                          {fmtPrice(trade.entry_price)}
-                        </td>
-                        <td style={{ ...TD, color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>
-                          {trade.exit_price ? fmtPrice(trade.exit_price) : <span style={{ color: 'var(--text-4)' }}>—</span>}
-                        </td>
-                        <td style={{ ...TD, color: 'var(--text-2)', fontVariantNumeric: 'tabular-nums' }}>
-                          {trade.size}
-                        </td>
-                        <td style={{ ...TD }}>
-                          {rr
-                            ? <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-2)' }}>{rr}</span>
-                            : <span style={{ color: 'var(--text-4)' }}>—</span>
-                          }
-                        </td>
+                        {!isMobile && (
+                          <td style={{ ...TD, color: 'var(--text-2)', fontVariantNumeric: 'tabular-nums' }}>
+                            {fmtPrice(trade.entry_price)}
+                          </td>
+                        )}
+                        {!isMobile && (
+                          <td style={{ ...TD, color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>
+                            {trade.exit_price ? fmtPrice(trade.exit_price) : <span style={{ color: 'var(--text-4)' }}>—</span>}
+                          </td>
+                        )}
+                        {!isMobile && (
+                          <td style={{ ...TD, color: 'var(--text-2)', fontVariantNumeric: 'tabular-nums' }}>
+                            {trade.size}
+                          </td>
+                        )}
+                        {!isMobile && (
+                          <td style={{ ...TD }}>
+                            {rr
+                              ? <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-2)' }}>{rr}</span>
+                              : <span style={{ color: 'var(--text-4)' }}>—</span>
+                            }
+                          </td>
+                        )}
                         <td style={{
                           ...TD,
                           fontWeight: 700,

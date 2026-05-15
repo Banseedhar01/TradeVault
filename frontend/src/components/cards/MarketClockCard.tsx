@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface Session {
   name: string;
@@ -10,6 +11,7 @@ interface Session {
 
 export const MarketClockCard = () => {
   const [now, setNow] = useState(new Date());
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -100,15 +102,15 @@ export const MarketClockCard = () => {
       <div className="card-body" style={{ gap: 14 }}>
 
         {/* Hero clock — IST */}
-        <div className="panel" style={{ padding: '20px 16px', textAlign: 'center' }}>
+        <div className="panel" style={{ padding: isMobile ? '14px 12px' : '20px 16px', textAlign: 'center' }}>
           <div style={{
             fontFamily: "'SF Mono','Fira Code',monospace",
-            fontSize: '2.5rem', fontWeight: 700, color: 'var(--text-1)',
+            fontSize: isMobile ? '1.75rem' : '2.5rem', fontWeight: 700, color: 'var(--text-1)',
             letterSpacing: '-0.04em', lineHeight: 1,
           }}>
             {istTime}
           </div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-2)', marginTop: 8, letterSpacing: '0.04em' }}>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-2)', marginTop: 6, letterSpacing: '0.04em' }}>
             {istDate} · IST
           </div>
         </div>
@@ -150,7 +152,7 @@ export const MarketClockCard = () => {
               <span className="label" style={{ display: 'block', marginBottom: 6 }}>Next {name} Session Opens In</span>
               <span style={{
                 fontFamily: "'SF Mono','Fira Code',monospace",
-                fontSize: '1.625rem', fontWeight: 700, color: 'var(--blue)',
+                fontSize: isMobile ? '1.25rem' : '1.625rem', fontWeight: 700, color: 'var(--blue)',
                 letterSpacing: '-0.03em',
               }}>
                 {time}

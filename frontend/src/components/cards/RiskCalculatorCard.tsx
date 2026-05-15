@@ -173,7 +173,7 @@ export const RiskCalculatorCard = () => {
                     <option value="MES">MES — $5/pt</option>
                   </select>
                 </div>
-                <div />
+                {!isMobile && <div />}
                 <Field label="Entry" value={fut.entry} step={0.25}
                   onChange={v => setFut(p => ({ ...p, entry: v }))} />
                 <Field label="Stop Loss" value={fut.stop} step={0.25}
