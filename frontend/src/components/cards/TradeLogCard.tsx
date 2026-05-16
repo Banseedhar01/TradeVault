@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import { useTrades, useDeleteTrade } from '../../hooks/useTrades';
 import { useAccounts } from '../../hooks/useAccounts';
 import { useFirms } from '../../hooks/useFirms';
@@ -36,7 +37,7 @@ const calcRR = (t: Trade): string | null => {
 const Stat = ({ label, value, color = 'var(--text-1)' }: { label: string; value: string; color?: string }) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
     <span className="label">{label}</span>
-    <span style={{ fontSize: '1.125rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1 }}>
+    <span style={{ fontSize: '0.9375rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1 }}>
       {value}
     </span>
   </div>
@@ -47,8 +48,9 @@ export const TradeLogCard = () => {
   const { data: trades, isLoading, error } = useTrades();
   const { data: accounts } = useAccounts();
   const { data: firms }    = useFirms();
-  const { setAddTradeOpen, activeSection, viewAccountId, accountStatusFilter } = useStore();
+  const { setAddTradeOpen, setEditTradeId, activeSection, viewAccountId, accountStatusFilter } = useStore();
   const deleteTrade = useDeleteTrade();
+  const isMobile = useIsMobile();
   const [filter, setFilter]         = useState<Filter>('all');
   const [search, setSearch]         = useState('');
   const [page, setPage]             = useState(1);
@@ -202,7 +204,7 @@ export const TradeLogCard = () => {
           {/* ── Summary strip ── */}
           {summary && (
             <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)',
+              display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)',
               gap: 0, borderBottom: '1px solid var(--border)',
             }}>
               {[
@@ -214,12 +216,13 @@ export const TradeLogCard = () => {
                 { label: 'Total',     value: String(summary.total),             color: 'var(--text-1)' },
               ].map(({ label, value, color }, i, arr) => (
                 <div key={label} style={{
-                  padding: '14px 16px',
-                  borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+                  padding: isMobile ? '10px 12px' : '14px 16px',
+                  borderRight: isMobile ? (i % 3 < 2 ? '1px solid var(--border)' : 'none') : (i < arr.length - 1 ? '1px solid var(--border)' : 'none'),
+                  borderBottom: isMobile && i < 3 ? '1px solid var(--border)' : 'none',
                   display: 'flex', flexDirection: 'column', gap: 4,
                 }}>
-                  <span className="label">{label}</span>
-                  <span style={{ fontSize: '1.0625rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1, opacity: 0.75 }}>
+                  <span className="label" style={{ fontSize: '0.6rem' }}>{label}</span>
+                  <span style={{ fontSize: isMobile ? '0.875rem' : '1rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1 }}>
                     {value}
                   </span>
                 </div>
@@ -229,8 +232,10 @@ export const TradeLogCard = () => {
 
           {/* ── Filter + search bar ── */}
           <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '10px 16px', borderBottom: '1px solid var(--border)', gap: 12,
+            display: 'flex', alignItems: isMobile ? 'flex-start' : 'center',
+            flexDirection: isMobile ? 'column' : 'row',
+            justifyContent: 'space-between',
+            padding: '10px 16px', borderBottom: '1px solid var(--border)', gap: 8,
             background: 'var(--inset)',
           }}>
             {/* Filter pills */}
@@ -254,7 +259,7 @@ export const TradeLogCard = () => {
             </div>
 
             {/* Search */}
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: isMobile ? '100%' : 'auto' }}>
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
                 style={{ position: 'absolute', left: 10, color: 'var(--text-3)', pointerEvents: 'none' }}>
                 <circle cx="5" cy="5" r="3.5" stroke="currentColor" strokeWidth="1.2"/>
@@ -268,7 +273,7 @@ export const TradeLogCard = () => {
                   background: 'var(--surface)', border: '1px solid var(--border)',
                   borderRadius: 7, padding: '5px 10px 5px 28px',
                   fontSize: '0.75rem', color: 'var(--text-1)', outline: 'none',
-                  width: 170, transition: 'border-color 150ms',
+                  width: isMobile ? '100%' : 170, transition: 'border-color 150ms',
                 }}
                 onFocus={e => (e.target.style.borderColor = 'var(--border-focus)')}
                 onBlur={e  => (e.target.style.borderColor = 'var(--border)')}
@@ -302,13 +307,13 @@ export const TradeLogCard = () => {
                     <th style={{ ...TH }}>Date</th>
                     <th style={{ ...TH }}>Instrument</th>
                     <th style={{ ...TH }}>Side</th>
-                    <th style={{ ...TH }}>Entry</th>
-                    <th style={{ ...TH }}>Exit</th>
-                    <th style={{ ...TH }}>Size</th>
-                    <th style={{ ...TH }}>RR</th>
+                    {!isMobile && <th style={{ ...TH }}>Entry</th>}
+                    {!isMobile && <th style={{ ...TH }}>Exit</th>}
+                    {!isMobile && <th style={{ ...TH }}>Size</th>}
+                    {!isMobile && <th style={{ ...TH }}>RR</th>}
                     <th style={{ ...TH }}>PnL</th>
                     <th style={{ ...TH }}>Status</th>
-                    <th style={{ width: 60, padding: '10px 14px', borderBottom: '1px solid var(--border)' }} />
+                    <th style={{ width: 80, padding: '10px 14px', borderBottom: '1px solid var(--border)' }} />
                   </tr>
                 </thead>
                 <tbody>
@@ -336,30 +341,37 @@ export const TradeLogCard = () => {
                             color: trade.direction === 'long' ? 'var(--green)' : 'var(--red)',
                           }}>
                             {trade.direction === 'long' ? '▲' : '▼'}
-                            {trade.direction === 'long' ? 'Long' : 'Short'}
+                            {!isMobile && (trade.direction === 'long' ? 'Long' : 'Short')}
                           </span>
                         </td>
-                        <td style={{ ...TD, color: 'var(--text-2)', fontVariantNumeric: 'tabular-nums' }}>
-                          {fmtPrice(trade.entry_price)}
-                        </td>
-                        <td style={{ ...TD, color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>
-                          {trade.exit_price ? fmtPrice(trade.exit_price) : <span style={{ color: 'var(--text-4)' }}>—</span>}
-                        </td>
-                        <td style={{ ...TD, color: 'var(--text-2)', fontVariantNumeric: 'tabular-nums' }}>
-                          {trade.size}
-                        </td>
-                        <td style={{ ...TD }}>
-                          {rr
-                            ? <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-2)' }}>{rr}</span>
-                            : <span style={{ color: 'var(--text-4)' }}>—</span>
-                          }
-                        </td>
+                        {!isMobile && (
+                          <td style={{ ...TD, color: 'var(--text-2)', fontVariantNumeric: 'tabular-nums' }}>
+                            {fmtPrice(trade.entry_price)}
+                          </td>
+                        )}
+                        {!isMobile && (
+                          <td style={{ ...TD, color: 'var(--text-3)', fontVariantNumeric: 'tabular-nums' }}>
+                            {trade.exit_price ? fmtPrice(trade.exit_price) : <span style={{ color: 'var(--text-4)' }}>—</span>}
+                          </td>
+                        )}
+                        {!isMobile && (
+                          <td style={{ ...TD, color: 'var(--text-2)', fontVariantNumeric: 'tabular-nums' }}>
+                            {trade.size}
+                          </td>
+                        )}
+                        {!isMobile && (
+                          <td style={{ ...TD }}>
+                            {rr
+                              ? <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-2)' }}>{rr}</span>
+                              : <span style={{ color: 'var(--text-4)' }}>—</span>
+                            }
+                          </td>
+                        )}
                         <td style={{
                           ...TD,
                           fontWeight: 700,
                           fontVariantNumeric: 'tabular-nums',
                           color: trade.pnl >= 0 ? 'var(--green)' : 'var(--red)',
-                          opacity: 0.75,
                         }}>
                           {fmtPnL(trade.pnl)}
                         </td>
@@ -410,27 +422,60 @@ export const TradeLogCard = () => {
                               </button>
                             </div>
                           ) : (
-                            <button
-                              onClick={() => setConfirmDeleteId(trade.id)}
-                              title="Delete trade"
-                              style={{
-                                padding: '4px 7px', borderRadius: 5, cursor: 'pointer',
-                                background: 'transparent', border: '1px solid transparent',
-                                color: 'var(--text-4)', fontSize: '0.75rem', transition: 'all 120ms',
-                              }}
-                              onMouseEnter={e => {
-                                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,0.1)';
-                                (e.currentTarget as HTMLButtonElement).style.color = '#ef4444';
-                                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(239,68,68,0.25)';
-                              }}
-                              onMouseLeave={e => {
-                                (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-4)';
-                                (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
-                              }}
-                            >
-                              🗑
-                            </button>
+                            <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                              <button
+                                onClick={() => { setEditTradeId(trade.id); setAddTradeOpen(true); }}
+                                title="Edit trade"
+                                style={{
+                                  padding: '4px 7px', borderRadius: 5, cursor: 'pointer',
+                                  background: 'transparent', border: '1px solid transparent',
+                                  color: 'var(--text-4)', fontSize: '0.75rem', transition: 'all 120ms',
+                                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                }}
+                                onMouseEnter={e => {
+                                  (e.currentTarget as HTMLButtonElement).style.background = 'rgba(96,165,250,0.1)';
+                                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--blue)';
+                                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(96,165,250,0.25)';
+                                }}
+                                onMouseLeave={e => {
+                                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-4)';
+                                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
+                                }}
+                              >
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteId(trade.id)}
+                                title="Delete trade"
+                                style={{
+                                  padding: '4px 7px', borderRadius: 5, cursor: 'pointer',
+                                  background: 'transparent', border: '1px solid transparent',
+                                  color: 'var(--text-4)', fontSize: '0.75rem', transition: 'all 120ms',
+                                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                }}
+                                onMouseEnter={e => {
+                                  (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,0.1)';
+                                  (e.currentTarget as HTMLButtonElement).style.color = '#ef4444';
+                                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(239,68,68,0.25)';
+                                }}
+                                onMouseLeave={e => {
+                                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-4)';
+                                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
+                                }}
+                              >
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="3 6 5 6 21 6"/>
+                                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                  <path d="M10 11v6M14 11v6"/>
+                                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                </svg>
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>

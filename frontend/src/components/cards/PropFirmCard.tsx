@@ -5,6 +5,7 @@ import { Badge } from '../ui/Badge';
 import { ProgressBar } from '../ui/ProgressBar';
 import { useStore } from '../../store';
 import { useDeleteAccount } from '../../hooks/useAccounts';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface PropFirmCardProps {
   firm: PropFirm;
@@ -28,6 +29,7 @@ const STATUS_LABEL: Record<string, string> = {
 export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
   const { setAddAccountOpen, setSelectedFirmId, activeSection, setDetailAccountId } = useStore();
   const deleteAccount = useDeleteAccount();
+  const isMobile = useIsMobile();
   const [isHovered, setIsHovered]     = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -58,7 +60,7 @@ export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
   // ── Empty state ────────────────────────────────────────────────
   if (!account) {
     return (
-      <div className="card" style={{ flexShrink: 0, width: 288 }}>
+      <div className="card" style={{ flexShrink: 0, width: isMobile ? '82vw' : 288 }}>
         <div style={{ height: 3, background: `linear-gradient(90deg, ${accent}, ${accent}80)` }} />
         <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-1)' }}>{firm.name}</div>
@@ -103,7 +105,7 @@ export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
       onClick={() => setDetailAccountId(account.id)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => { setIsHovered(false); setConfirmDelete(false); }}
-      style={{ flexShrink: 0, width: 288, cursor: 'pointer', transition: 'box-shadow 150ms, transform 120ms',
+      style={{ flexShrink: 0, width: isMobile ? '82vw' : 288, cursor: 'pointer', transition: 'box-shadow 150ms, transform 120ms',
         boxShadow: isHovered ? `0 0 0 1px ${accentBorder}, 0 8px 24px rgba(0,0,0,0.25)` : undefined,
         transform: isHovered ? 'translateY(-1px)' : undefined,
       }}
@@ -151,11 +153,18 @@ export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
                 width: 26, height: 26, borderRadius: 5, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: 'transparent', border: '1px solid transparent',
-                color: 'var(--text-4)', fontSize: '0.75rem', transition: 'all 120ms',
+                color: 'var(--text-4)', transition: 'all 120ms',
               }}
                 onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = 'rgba(239,68,68,0.1)'; b.style.color = '#ef4444'; b.style.borderColor = 'rgba(239,68,68,0.25)'; }}
                 onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = 'transparent'; b.style.color = 'var(--text-4)'; b.style.borderColor = 'transparent'; }}
-              >🗑</button>
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  <path d="M10 11v6M14 11v6"/>
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+              </button>
             )}
             <button onClick={handleAdd} style={{
               padding: '3px 10px', borderRadius: 5, cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600,
@@ -192,7 +201,7 @@ export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                 padding: '4px 0', borderRadius: 5, fontSize: '0.67rem', fontWeight: active ? 600 : 400,
                 background: active ? 'var(--raised)' : 'transparent',
-                color: active ? color : 'var(--text-4)',
+                color: active ? color : 'var(--text-3)',
                 border: active ? '1px solid rgba(255,255,255,0.07)' : '1px solid transparent',
               }}>
                 <span style={{
@@ -214,22 +223,22 @@ export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
           border: `1px solid ${pnlPos ? 'rgba(16,185,129,0.18)' : pnl < 0 ? 'rgba(239,68,68,0.18)' : 'var(--border)'}`,
         }}>
           <div>
-            <div style={{ fontSize: '0.58rem', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <div style={{ fontSize: '0.6rem', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.09em' }}>
               Current P&L
             </div>
             <div style={{
-              fontSize: '1rem', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1, marginTop: 2, opacity: 0.75,
+              fontSize: '0.9375rem', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.1, marginTop: 3,
               color: pnlPos ? '#10b981' : pnl < 0 ? '#ef4444' : 'var(--text-2)',
             }}>
               {pnlPos ? '+' : ''}{pnl < 0 ? '-' : ''}${Math.abs(pnl).toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.58rem', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <div style={{ fontSize: '0.6rem', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.09em' }}>
               {STATUS_LABEL[stage.status] ?? 'Stage'}
             </div>
             <div style={{
-              fontSize: '0.7rem', fontWeight: 700, marginTop: 2,
+              fontSize: '0.75rem', fontWeight: 600, marginTop: 3,
               color: STATUS_COLOR[stage.status] ?? 'var(--text-3)',
             }}>
               {account.leverage}
@@ -239,7 +248,7 @@ export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
 
         {/* ── 4-metric strip ── */}
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
+          display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
           borderRadius: 8, overflow: 'hidden',
           border: '1px solid var(--border)',
         }}>
@@ -248,16 +257,17 @@ export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
             { label: 'Max Loss', value: `$${stage.max_loss.toLocaleString()}`,       color: '#ef4444' },
             { label: 'Daily Loss', value: `$${stage.max_daily_loss.toLocaleString()}`, color: '#f59e0b' },
             { label: 'Split',   value: `${stage.profit_split}%`,                    color: '#a1a1aa' },
-          ].map(({ label, value, color }, i, arr) => (
+          ].map(({ label, value, color }, i) => (
             <div key={label} style={{
               padding: '8px 0', textAlign: 'center',
-              borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+              borderRight: isMobile ? (i % 2 === 0 ? '1px solid var(--border)' : 'none') : (i < 3 ? '1px solid var(--border)' : 'none'),
+              borderBottom: isMobile && i < 2 ? '1px solid var(--border)' : 'none',
               background: 'var(--inset)',
             }}>
-              <div style={{ fontSize: '0.78rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1, opacity: 0.72 }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 600, color, letterSpacing: '-0.01em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                 {value}
               </div>
-              <div style={{ fontSize: '0.55rem', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 3 }}>
+              <div style={{ fontSize: '0.57rem', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 4 }}>
                 {label}
               </div>
             </div>

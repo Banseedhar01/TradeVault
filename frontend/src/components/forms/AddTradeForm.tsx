@@ -3,12 +3,11 @@ import { SlideOver } from '../ui/SlideOver';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { useStore } from '../../store';
-import { useCreateTrade } from '../../hooks/useTrades';
+import { useCreateTrade, useUpdateTrade, useTrades } from '../../hooks/useTrades';
 import { useAccounts } from '../../hooks/useAccounts';
 import { useFirms } from '../../hooks/useFirms';
 import { Trade } from '../../types/trade';
 
-// Returns today's date in YYYY-MM-DD format using IST timezone
 const todayIST = () =>
   new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 
@@ -46,18 +45,39 @@ const blankForm = () => ({
 });
 
 export const AddTradeForm = () => {
-  const { isAddTradeOpen, setAddTradeOpen, activeSection } = useStore();
+  const { isAddTradeOpen, setAddTradeOpen, activeSection, editTradeId, setEditTradeId } = useStore();
   const { data: accounts } = useAccounts();
   const { data: firms }    = useFirms();
-  const createTradeMutation = useCreateTrade();
+  const { data: trades }   = useTrades();
+  const createTrade = useCreateTrade();
+  const updateTrade = useUpdateTrade();
+
+  const isEditMode = !!editTradeId;
+  const editTrade  = isEditMode ? trades?.find(t => t.id === editTradeId) : undefined;
 
   const [form, setForm]     = useState(blankForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Refresh date each time the form opens
+  // Populate form when opening in edit mode
   useEffect(() => {
-    if (isAddTradeOpen) setForm(prev => ({ ...prev, date: todayIST() }));
-  }, [isAddTradeOpen]);
+    if (isAddTradeOpen && editTrade) {
+      setForm({
+        account_id:  editTrade.account_id,
+        stage_id:    editTrade.stage_id ?? 0,
+        date:        editTrade.date.split('T')[0],
+        instrument:  editTrade.instrument,
+        direction:   editTrade.direction,
+        entry_price: editTrade.entry_price,
+        stop_loss:   editTrade.stop_loss   ?? 0,
+        take_profit: editTrade.take_profit ?? 0,
+        size:        editTrade.size,
+        exit_price:  editTrade.exit_price  ?? 0,
+        notes:       editTrade.notes       ?? '',
+      });
+    } else if (isAddTradeOpen && !isEditMode) {
+      setForm(prev => ({ ...prev, date: todayIST() }));
+    }
+  }, [isAddTradeOpen, editTradeId]);
 
   const sectionAccounts = (accounts || []).filter(a =>
     firms?.find(f => f.id === a.firm_id)?.market_type === activeSection
@@ -71,14 +91,15 @@ export const AddTradeForm = () => {
     })),
   ];
 
-  const selectedAccount = sectionAccounts.find(a => a.id === form.account_id);
+  const selectedAccount = sectionAccounts.find(a => a.id === form.account_id)
+    ?? (isEditMode ? accounts?.find(a => a.id === form.account_id) : undefined);
 
   const stageOptions = (selectedAccount?.stages || []).map((s, i) => ({
     value: i.toString(), label: s.name,
   }));
 
   useEffect(() => {
-    if (selectedAccount)
+    if (selectedAccount && !isEditMode)
       setForm(prev => ({ ...prev, stage_id: selectedAccount.current_stage }));
   }, [selectedAccount?.id]);
 
@@ -97,10 +118,10 @@ export const AddTradeForm = () => {
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!form.account_id)   e.account_id   = 'Select an account';
-    if (!form.instrument)   e.instrument   = 'Select an instrument';
-    if (form.entry_price <= 0) e.entry_price = 'Entry price must be > 0';
-    if (form.size <= 0)     e.size         = 'Size must be > 0';
+    if (!form.account_id)      e.account_id   = 'Select an account';
+    if (!form.instrument)      e.instrument   = 'Select an instrument';
+    if (form.entry_price <= 0) e.entry_price  = 'Entry price must be > 0';
+    if (form.size <= 0)        e.size         = 'Size must be > 0';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -109,7 +130,7 @@ export const AddTradeForm = () => {
     e.preventDefault();
     if (!validate()) return;
 
-    const trade: Omit<Trade, 'id' | 'created_at' | 'updated_at'> = {
+    const payload = {
       account_id:  form.account_id,
       stage_id:    Number(form.stage_id),
       date:        form.date,
@@ -123,22 +144,29 @@ export const AddTradeForm = () => {
       pnl:         form.exit_price  > 0 ? pnl : 0,
       status:      form.exit_price  > 0 ? 'closed' : 'open',
       notes:       form.notes.trim(),
-    };
+    } as Omit<Trade, 'id' | 'created_at' | 'updated_at'>;
 
-    createTradeMutation.mutate(trade, { onSuccess: handleClose });
+    if (isEditMode && editTradeId) {
+      updateTrade.mutate({ id: editTradeId, updates: payload }, { onSuccess: handleClose });
+    } else {
+      createTrade.mutate(payload, { onSuccess: handleClose });
+    }
   };
 
   const handleClose = () => {
     setForm(blankForm());
     setErrors({});
+    setEditTradeId(undefined);
     setAddTradeOpen(false);
   };
 
   const set = (field: string, value: any) =>
     setForm(prev => ({ ...prev, [field]: value }));
 
+  const isPending = createTrade.isPending || updateTrade.isPending;
+
   return (
-    <SlideOver isOpen={isAddTradeOpen} onClose={handleClose} title="Add Trade">
+    <SlideOver isOpen={isAddTradeOpen} onClose={handleClose} title={isEditMode ? 'Edit Trade' : 'Add Trade'}>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
         {/* Date */}
@@ -149,14 +177,27 @@ export const AddTradeForm = () => {
           onChange={e => set('date', e.target.value)}
         />
 
-        {/* Account */}
-        <Select
-          label="Account"
-          value={form.account_id}
-          onChange={e => set('account_id', e.target.value)}
-          options={accountOptions}
-          error={errors.account_id}
-        />
+        {/* Account — locked in edit mode */}
+        {isEditMode ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span style={sectionLabel}>Account</span>
+            <div style={{
+              padding: '9px 12px', borderRadius: 8, fontSize: '0.8125rem',
+              background: 'var(--inset)', border: '1px solid var(--border)',
+              color: 'var(--text-3)',
+            }}>
+              {accountOptions.find(o => o.value === form.account_id)?.label ?? form.account_id}
+            </div>
+          </div>
+        ) : (
+          <Select
+            label="Account"
+            value={form.account_id}
+            onChange={e => set('account_id', e.target.value)}
+            options={accountOptions}
+            error={errors.account_id}
+          />
+        )}
 
         {/* Stage */}
         {selectedAccount && stageOptions.length > 0 && (
@@ -165,6 +206,7 @@ export const AddTradeForm = () => {
             value={form.stage_id.toString()}
             onChange={e => set('stage_id', Number(e.target.value))}
             options={stageOptions}
+            disabled={isEditMode}
           />
         )}
 
@@ -241,10 +283,7 @@ export const AddTradeForm = () => {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
             <span style={sectionLabel}>Calculated PnL</span>
-            <span style={{
-              fontSize: '1rem', fontWeight: 700,
-              color: pnl >= 0 ? 'var(--green)' : 'var(--red)',
-            }}>
+            <span style={{ fontSize: '1rem', fontWeight: 700, color: pnl >= 0 ? 'var(--green)' : 'var(--red)' }}>
               {pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}
             </span>
           </div>
@@ -282,14 +321,16 @@ export const AddTradeForm = () => {
           }}>
             Cancel
           </button>
-          <button type="submit" disabled={createTradeMutation.isPending} style={{
+          <button type="submit" disabled={isPending} style={{
             flex: 1, padding: '9px 0', borderRadius: 7,
-            cursor: createTradeMutation.isPending ? 'not-allowed' : 'pointer',
-            background: 'var(--blue)', border: 'none',
+            cursor: isPending ? 'not-allowed' : 'pointer',
+            background: isEditMode ? '#059669' : 'var(--blue)', border: 'none',
             color: '#fff', fontSize: '0.8125rem', fontWeight: 700,
-            opacity: createTradeMutation.isPending ? 0.7 : 1,
+            opacity: isPending ? 0.7 : 1,
           }}>
-            {createTradeMutation.isPending ? 'Creating…' : 'Add Trade'}
+            {isPending
+              ? (isEditMode ? 'Saving…' : 'Creating…')
+              : (isEditMode ? 'Save Changes' : 'Add Trade')}
           </button>
         </div>
 

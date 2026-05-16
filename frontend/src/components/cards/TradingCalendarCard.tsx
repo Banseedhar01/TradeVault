@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useCalendarData } from '../../hooks/useAnalytics';
 import { useTrades, useDeleteTrade } from '../../hooks/useTrades';
 import { useStore } from '../../store';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import { Button } from '../ui/Button';
 import { Trade } from '../../types/trade';
 
@@ -81,6 +82,7 @@ export const TradingCalendarCard = () => {
   const [hovered, setHovered]     = useState<{ day: number; entry: DayEntry } | null>(null);
   const [clickedDate, setClicked] = useState<string | null>(null);
   const { viewAccountId }         = useStore();
+  const isMobile                  = useIsMobile();
 
   const { data, isLoading } = useCalendarData(viewAccountId, undefined, cur.getFullYear(), cur.getMonth() + 1);
   const { data: allTrades } = useTrades();
@@ -203,7 +205,7 @@ export const TradingCalendarCard = () => {
           <>
             {/* ── Monthly stats strip ── */}
             {monthStats && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', borderBottom: '1px solid var(--border)' }}>
                 {[
                   { label: 'Month P&L',  value: fmtPnL(monthStats.totalPnL),              color: monthStats.totalPnL >= 0 ? 'var(--green)' : 'var(--red)' },
                   { label: 'Win Rate',   value: `${monthStats.winRate.toFixed(1)}%`,        color: monthStats.winRate >= 50 ? 'var(--green)' : 'var(--red)' },
@@ -212,11 +214,12 @@ export const TradingCalendarCard = () => {
                 ].map(({ label, value, color }, i, arr) => (
                   <div key={label} style={{
                     padding: '10px 14px',
-                    borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+                    borderRight: isMobile ? (i % 2 === 0 ? '1px solid var(--border)' : 'none') : (i < arr.length - 1 ? '1px solid var(--border)' : 'none'),
+                    borderBottom: isMobile && i < 2 ? '1px solid var(--border)' : 'none',
                     display: 'flex', flexDirection: 'column', gap: 3,
                   }}>
-                    <span style={{ fontSize: '0.58rem', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</span>
-                    <span style={{ fontSize: '0.8125rem', fontWeight: 600, color, letterSpacing: '-0.02em', lineHeight: 1, opacity: 0.8 }}>{value}</span>
+                    <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.09em' }}>{label}</span>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1 }}>{value}</span>
                   </div>
                 ))}
               </div>
@@ -230,7 +233,7 @@ export const TradingCalendarCard = () => {
                 {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d, i) => (
                   <div key={d} style={{
                     textAlign: 'center', fontSize: '0.62rem', fontWeight: 500, paddingBottom: 4,
-                    color: i === 0 || i === 6 ? 'rgba(255,255,255,0.14)' : 'var(--text-4)',
+                    color: i === 0 || i === 6 ? 'var(--text-4)' : 'var(--text-3)',
                     letterSpacing: '0.05em',
                   }}>{d}</div>
                 ))}
@@ -289,22 +292,22 @@ export const TradingCalendarCard = () => {
                         <>
                           {/* Day number */}
                           <div style={{
-                            fontSize: '0.6rem', fontWeight: 500, lineHeight: 1, paddingLeft: 2,
+                            fontSize: '0.65rem', fontWeight: 600, lineHeight: 1, paddingLeft: 2,
                             color: today   ? 'var(--blue)'
-                              : profit     ? 'rgba(110,231,183,0.9)'
-                              : loss       ? 'rgba(252,165,165,0.9)'
-                              : isWeekend  ? 'rgba(255,255,255,0.18)'
-                              : 'var(--text-4)',
+                              : profit     ? '#6ee7b7'
+                              : loss       ? '#fca5a5'
+                              : isWeekend  ? 'var(--text-3)'
+                              : 'var(--text-2)',
                           }}>{day}</div>
 
                           {entry ? (
                             <>
-                              {/* PnL — lighter weight */}
+                              {/* PnL */}
                               <div style={{
                                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '0.62rem', fontWeight: 600, lineHeight: 1,
+                                fontSize: '0.62rem', fontWeight: 700, lineHeight: 1,
                                 color: entry.total_pnl >= 0 ? 'var(--green)' : 'var(--red)',
-                                letterSpacing: '-0.01em', opacity: 0.8,
+                                letterSpacing: '-0.01em',
                               }}>
                                 {fmtPnL(entry.total_pnl)}
                               </div>
@@ -312,15 +315,15 @@ export const TradingCalendarCard = () => {
                               {/* W / L pills */}
                               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
                                 {entry.winning_trades > 0 && (
-                                  <span style={{ fontSize: '0.5rem', fontWeight: 600, color: 'rgba(110,231,183,0.7)', lineHeight: 1 }}>
+                                  <span style={{ fontSize: '0.5rem', fontWeight: 600, color: '#6ee7b7', lineHeight: 1 }}>
                                     {entry.winning_trades}W
                                   </span>
                                 )}
                                 {entry.winning_trades > 0 && entry.losing_trades > 0 && (
-                                  <span style={{ fontSize: '0.45rem', color: 'var(--text-4)', lineHeight: 1 }}>·</span>
+                                  <span style={{ fontSize: '0.45rem', color: 'var(--text-3)', lineHeight: 1 }}>·</span>
                                 )}
                                 {entry.losing_trades > 0 && (
-                                  <span style={{ fontSize: '0.5rem', fontWeight: 600, color: 'rgba(252,165,165,0.7)', lineHeight: 1 }}>
+                                  <span style={{ fontSize: '0.5rem', fontWeight: 600, color: '#fca5a5', lineHeight: 1 }}>
                                     {entry.losing_trades}L
                                   </span>
                                 )}
