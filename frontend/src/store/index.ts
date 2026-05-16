@@ -25,6 +25,10 @@ export interface AppState {
   setAddAccountOpen: (open: boolean) => void;
   setAddTradeOpen: (open: boolean) => void;
 
+  // Trade being edited (undefined = create mode)
+  editTradeId: string | undefined;
+  setEditTradeId: (id?: string) => void;
+
   // Selected data for forms
   selectedFirmId?: string;
   selectedAccountId?: string;
@@ -52,6 +56,9 @@ export const useStore = create<AppState>((set) => ({
   setAddFirmOpen: (open) => set({ isAddFirmOpen: open }),
   setAddAccountOpen: (open) => set({ isAddAccountOpen: open }),
   setAddTradeOpen: (open) => set({ isAddTradeOpen: open }),
+
+  editTradeId: undefined,
+  setEditTradeId: (id) => set({ editTradeId: id }),
 
   selectedFirmId: undefined,
   selectedAccountId: undefined,

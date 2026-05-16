@@ -48,7 +48,7 @@ export const TradeLogCard = () => {
   const { data: trades, isLoading, error } = useTrades();
   const { data: accounts } = useAccounts();
   const { data: firms }    = useFirms();
-  const { setAddTradeOpen, activeSection, viewAccountId, accountStatusFilter } = useStore();
+  const { setAddTradeOpen, setEditTradeId, activeSection, viewAccountId, accountStatusFilter } = useStore();
   const deleteTrade = useDeleteTrade();
   const isMobile = useIsMobile();
   const [filter, setFilter]         = useState<Filter>('all');
@@ -221,8 +221,8 @@ export const TradeLogCard = () => {
                   borderBottom: isMobile && i < 3 ? '1px solid var(--border)' : 'none',
                   display: 'flex', flexDirection: 'column', gap: 4,
                 }}>
-                  <span className="label">{label}</span>
-                  <span style={{ fontSize: isMobile ? '0.875rem' : '1.0625rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1, opacity: 0.75 }}>
+                  <span className="label" style={{ fontSize: '0.6rem' }}>{label}</span>
+                  <span style={{ fontSize: isMobile ? '0.875rem' : '1rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1 }}>
                     {value}
                   </span>
                 </div>
@@ -313,7 +313,7 @@ export const TradeLogCard = () => {
                     {!isMobile && <th style={{ ...TH }}>RR</th>}
                     <th style={{ ...TH }}>PnL</th>
                     <th style={{ ...TH }}>Status</th>
-                    <th style={{ width: 60, padding: '10px 14px', borderBottom: '1px solid var(--border)' }} />
+                    <th style={{ width: 80, padding: '10px 14px', borderBottom: '1px solid var(--border)' }} />
                   </tr>
                 </thead>
                 <tbody>
@@ -372,7 +372,6 @@ export const TradeLogCard = () => {
                           fontWeight: 700,
                           fontVariantNumeric: 'tabular-nums',
                           color: trade.pnl >= 0 ? 'var(--green)' : 'var(--red)',
-                          opacity: 0.75,
                         }}>
                           {fmtPnL(trade.pnl)}
                         </td>
@@ -423,27 +422,60 @@ export const TradeLogCard = () => {
                               </button>
                             </div>
                           ) : (
-                            <button
-                              onClick={() => setConfirmDeleteId(trade.id)}
-                              title="Delete trade"
-                              style={{
-                                padding: '4px 7px', borderRadius: 5, cursor: 'pointer',
-                                background: 'transparent', border: '1px solid transparent',
-                                color: 'var(--text-4)', fontSize: '0.75rem', transition: 'all 120ms',
-                              }}
-                              onMouseEnter={e => {
-                                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,0.1)';
-                                (e.currentTarget as HTMLButtonElement).style.color = '#ef4444';
-                                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(239,68,68,0.25)';
-                              }}
-                              onMouseLeave={e => {
-                                (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-4)';
-                                (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
-                              }}
-                            >
-                              🗑
-                            </button>
+                            <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                              <button
+                                onClick={() => { setEditTradeId(trade.id); setAddTradeOpen(true); }}
+                                title="Edit trade"
+                                style={{
+                                  padding: '4px 7px', borderRadius: 5, cursor: 'pointer',
+                                  background: 'transparent', border: '1px solid transparent',
+                                  color: 'var(--text-4)', fontSize: '0.75rem', transition: 'all 120ms',
+                                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                }}
+                                onMouseEnter={e => {
+                                  (e.currentTarget as HTMLButtonElement).style.background = 'rgba(96,165,250,0.1)';
+                                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--blue)';
+                                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(96,165,250,0.25)';
+                                }}
+                                onMouseLeave={e => {
+                                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-4)';
+                                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
+                                }}
+                              >
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteId(trade.id)}
+                                title="Delete trade"
+                                style={{
+                                  padding: '4px 7px', borderRadius: 5, cursor: 'pointer',
+                                  background: 'transparent', border: '1px solid transparent',
+                                  color: 'var(--text-4)', fontSize: '0.75rem', transition: 'all 120ms',
+                                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                }}
+                                onMouseEnter={e => {
+                                  (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,0.1)';
+                                  (e.currentTarget as HTMLButtonElement).style.color = '#ef4444';
+                                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(239,68,68,0.25)';
+                                }}
+                                onMouseLeave={e => {
+                                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-4)';
+                                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent';
+                                }}
+                              >
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="3 6 5 6 21 6"/>
+                                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                  <path d="M10 11v6M14 11v6"/>
+                                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                </svg>
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>

@@ -85,9 +85,6 @@ function App() {
           </div>
         </section>
 
-        {/* ── Account Selector ── */}
-        <AccountSelectorBar />
-
         {/* ── Bento Grid ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Row 1: Market Clock (1/3) + Risk Calculator (2/3) */}
@@ -95,6 +92,9 @@ function App() {
             <MarketClockCard />
             <RiskCalculatorCard />
           </div>
+
+          {/* Account Selector */}
+          <AccountSelectorBar />
 
           {/* Row 2: Trade Log full width */}
           <TradeLogCard />

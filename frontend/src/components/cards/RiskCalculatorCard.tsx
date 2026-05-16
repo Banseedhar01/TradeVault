@@ -36,8 +36,8 @@ const Metric = ({ label, value, color = 'var(--text-1)', large = false }: {
   label: string; value: string; color?: string; large?: boolean;
 }) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-    <span style={{ fontSize: '0.6rem', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</span>
-    <span style={{ fontSize: large ? '1rem' : '0.8125rem', fontWeight: large ? 800 : 700, color, letterSpacing: '-0.02em', lineHeight: 1.1, opacity: 0.75 }}>{value}</span>
+    <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.09em' }}>{label}</span>
+    <span style={{ fontSize: large ? '1rem' : '0.8125rem', fontWeight: large ? 800 : 700, color, letterSpacing: '-0.02em', lineHeight: 1.1 }}>{value}</span>
   </div>
 );
 

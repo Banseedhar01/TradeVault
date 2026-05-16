@@ -136,8 +136,8 @@ export const PerformanceCard = () => {
             borderBottom: isMobile && i < 3 ? '1px solid var(--border)' : 'none',
             display: 'flex', flexDirection: 'column', gap: 4,
           }}>
-            <span className="label" style={{ fontSize: '0.58rem' }}>{label}</span>
-            <span style={{ fontSize: '0.8125rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1, opacity: 0.75 }}>
+            <span className="label" style={{ fontSize: '0.6rem' }}>{label}</span>
+            <span style={{ fontSize: '0.8125rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1 }}>
               {value}
             </span>
           </div>
@@ -167,7 +167,7 @@ export const PerformanceCard = () => {
                 </defs>
                 <XAxis
                   dataKey="date" axisLine={false} tickLine={false}
-                  tick={{ fontSize: 9.5, fill: 'var(--text-4)' }}
+                  tick={{ fontSize: 9.5, fill: 'var(--text-3)' }}
                   tickFormatter={v => new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   interval="preserveStartEnd"
                 />
@@ -191,7 +191,7 @@ export const PerformanceCard = () => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={pnlBars} barSize={8} margin={{ top: 4, right: 8, bottom: 0, left: 8 }}>
                 <XAxis dataKey="date" axisLine={false} tickLine={false}
-                  tick={{ fontSize: 9, fill: 'var(--text-4)' }} interval={1} />
+                  tick={{ fontSize: 9, fill: 'var(--text-3)' }} interval={1} />
                 <YAxis hide />
                 <ReferenceLine y={0} stroke="rgba(255,255,255,0.08)" strokeWidth={1} />
                 <Tooltip content={<PnlTip />} />
@@ -214,8 +214,8 @@ export const PerformanceCard = () => {
             { label: 'Worst Trade', value: `-$${Math.abs(analytics?.largest_loss ?? 0).toFixed(0)}`, color: 'var(--red)' },
           ].map(({ label, value, color }) => (
             <div key={label} className="stat-tile" style={{ padding: '9px 10px', gap: 3 }}>
-              <span className="stat-label" style={{ fontSize: '0.57rem' }}>{label}</span>
-              <span style={{ fontSize: '0.875rem', fontWeight: 700, color, lineHeight: 1, opacity: 0.75 }}>{value}</span>
+              <span className="stat-label" style={{ fontSize: '0.6rem' }}>{label}</span>
+              <span style={{ fontSize: '0.875rem', fontWeight: 700, color, lineHeight: 1 }}>{value}</span>
             </div>
           ))}
         </div>

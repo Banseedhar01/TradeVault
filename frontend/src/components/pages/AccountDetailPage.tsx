@@ -176,18 +176,18 @@ export const AccountDetailPage = () => {
                 border: `1px solid ${pnlPos ? 'rgba(16,185,129,0.18)' : pnl < 0 ? 'rgba(239,68,68,0.18)' : 'var(--border)'}`,
               }}>
                 <div>
-                  <div style={{ fontSize: '0.58rem', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                  <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.09em' }}>
                     Current P&L
                   </div>
                   <div style={{
-                    fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1, marginTop: 3,
-                    color: pnlPos ? '#10b981' : pnl < 0 ? '#ef4444' : 'var(--text-2)', opacity: 0.85,
+                    fontSize: '1.125rem', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.1, marginTop: 3,
+                    color: pnlPos ? '#10b981' : pnl < 0 ? '#ef4444' : 'var(--text-2)',
                   }}>
                     {pnlPos ? '+' : ''}{pnl < 0 ? '-' : ''}${Math.abs(pnl).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '0.58rem', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                  <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.09em' }}>
                     Status
                   </div>
                   <div style={{
@@ -218,10 +218,10 @@ export const AccountDetailPage = () => {
                 display: 'flex', flexDirection: 'column', gap: 4,
                 background: 'var(--inset)',
               }}>
-                <span style={{ fontSize: '0.58rem', fontWeight: 600, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                <span style={{ fontSize: '0.6rem', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.09em' }}>
                   {label}
                 </span>
-                <span style={{ fontSize: '0.9375rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1, opacity: 0.75 }}>
+                <span style={{ fontSize: '0.875rem', fontWeight: 600, color, letterSpacing: '-0.01em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                   {value}
                 </span>
               </div>
