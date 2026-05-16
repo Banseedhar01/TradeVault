@@ -63,7 +63,7 @@ export const AddTradeForm = () => {
     if (isAddTradeOpen && editTrade) {
       setForm({
         account_id:  editTrade.account_id,
-        stage_id:    editTrade.stage_id,
+        stage_id:    editTrade.stage_id ?? 0,
         date:        editTrade.date.split('T')[0],
         instrument:  editTrade.instrument,
         direction:   editTrade.direction,
