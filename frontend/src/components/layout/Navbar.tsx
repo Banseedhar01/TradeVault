@@ -16,8 +16,14 @@ export const Navbar = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <img src="/favicon.svg" width={isMobile ? 28 : 34} height={isMobile ? 28 : 34} style={{ flexShrink: 0 }} />
           {!isMobile && (
-            <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '0.02em', lineHeight: 1, userSelect: 'none' }}>
-              <span style={{ color: 'var(--text-1)' }}>TRADE</span><span style={{ color: 'var(--blue)' }}>VAULT</span>
+            <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.06em', lineHeight: 1, userSelect: 'none' }}>
+              <span style={{ color: 'var(--text-1)' }}>TRADE</span>
+              <span style={{
+                background: 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>VAULT</span>
             </span>
           )}
         </div>

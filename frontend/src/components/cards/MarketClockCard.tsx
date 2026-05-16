@@ -104,9 +104,9 @@ export const MarketClockCard = () => {
         {/* Hero clock — IST */}
         <div className="panel" style={{ padding: isMobile ? '14px 12px' : '20px 16px', textAlign: 'center' }}>
           <div style={{
-            fontFamily: "'SF Mono','Fira Code',monospace",
-            fontSize: isMobile ? '1.75rem' : '2.5rem', fontWeight: 700, color: 'var(--text-1)',
-            letterSpacing: '-0.04em', lineHeight: 1,
+            fontFamily: "'JetBrains Mono','SF Mono','Fira Code',monospace",
+            fontSize: isMobile ? '1.75rem' : '2.5rem', fontWeight: 600, color: 'var(--text-1)',
+            letterSpacing: '-0.03em', lineHeight: 1,
           }}>
             {istTime}
           </div>
@@ -151,9 +151,9 @@ export const MarketClockCard = () => {
             <div className="panel" style={{ padding: '14px 16px', textAlign: 'center' }}>
               <span className="label" style={{ display: 'block', marginBottom: 6 }}>Next {name} Session Opens In</span>
               <span style={{
-                fontFamily: "'SF Mono','Fira Code',monospace",
-                fontSize: isMobile ? '1.25rem' : '1.625rem', fontWeight: 700, color: 'var(--blue)',
-                letterSpacing: '-0.03em',
+                fontFamily: "'JetBrains Mono','SF Mono','Fira Code',monospace",
+                fontSize: isMobile ? '1.25rem' : '1.625rem', fontWeight: 600, color: 'var(--blue)',
+                letterSpacing: '-0.02em',
               }}>
                 {time}
               </span>
