@@ -241,11 +241,10 @@ export const RiskCalculatorCard = () => {
         {!isMobile && <div style={{ width: 1, background: 'var(--border)', flexShrink: 0, alignSelf: 'stretch' }} />}
 
         {/* ── Results ── */}
-        <div style={{ flex: isMobile ? 'none' : '0 0 140px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <span className="label" style={{ marginBottom: 2 }}>Output</span>
+        <div style={{ flex: isMobile ? 'none' : '0 0 172px', display: 'flex', flexDirection: 'column', gap: 10 }}>
 
           {/* Direction badge */}
-          <div style={{
+          <span style={{
             display: 'inline-flex', alignSelf: 'flex-start',
             padding: '3px 10px', borderRadius: 6, fontSize: '0.7rem', fontWeight: 700,
             background: isLong ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)',
@@ -253,27 +252,87 @@ export const RiskCalculatorCard = () => {
             color: isLong ? 'var(--green)' : 'var(--red)',
           }}>
             {isLong ? '↑ Long' : '↓ Short'}
+          </span>
+
+          {/* Hero metric */}
+          <div style={{
+            background: 'var(--inset)', borderRadius: 8, border: '1px solid var(--border)',
+            padding: '10px 14px',
+          }}>
+            <div style={{ fontSize: '0.58rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 5 }}>
+              {isForex ? 'Lot Size' : 'Contracts'}
+            </div>
+            <div style={{
+              fontSize: '1.625rem', fontWeight: 700, color: 'var(--text-1)',
+              letterSpacing: '-0.03em', lineHeight: 1,
+              fontFamily: "'JetBrains Mono','SF Mono',monospace",
+              fontVariantNumeric: 'tabular-nums',
+            }}>
+              {isForex ? fc.lotSize.toFixed(2) : ft.contracts.toFixed(2)}
+            </div>
           </div>
 
-          {isForex ? (
-            <>
-              <Metric large label="Lot Size"    value={fc.lotSize.toFixed(2)}   color="var(--text-1)" />
-              <Metric label="Risk $"            value={`$${fc.risk.toLocaleString(undefined,{maximumFractionDigits:0})}`} color="var(--red)" />
-              <Metric label="Pip Risk"          value={`${fc.pips.toFixed(1)} pips`} color="var(--amber)" />
-              <Metric label="Take Profit"       value={tpValue.toFixed(4)}      color="var(--blue)" />
-              <Metric label="R:R"               value={`1 : ${rrValue.toFixed(2)}`} color="var(--text-2)" />
-              <Metric label="Potential Reward"  value={`$${fc.reward.toLocaleString(undefined,{maximumFractionDigits:0})}`} color="var(--green)" />
-            </>
-          ) : (
-            <>
-              <Metric large label="Contracts"   value={ft.contracts.toFixed(2)} color="var(--text-1)" />
-              <Metric label="Risk $"            value={`$${ft.risk.toLocaleString(undefined,{maximumFractionDigits:0})}`} color="var(--red)" />
-              <Metric label="Point Risk"        value={`${ft.stopDist.toFixed(2)} pts`} color="var(--amber)" />
-              <Metric label="Take Profit"       value={tpValue.toFixed(2)}      color="var(--blue)" />
-              <Metric label="R:R"               value={`1 : ${rrValue.toFixed(2)}`} color="var(--text-2)" />
-              <Metric label="Potential Reward"  value={`$${ft.reward.toLocaleString(undefined,{maximumFractionDigits:0})}`} color="var(--green)" />
-            </>
-          )}
+          {/* Risk / Reward side by side */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+            <div style={{
+              background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)',
+              borderRadius: 7, padding: '8px 10px',
+            }}>
+              <div style={{ fontSize: '0.57rem', fontWeight: 700, color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Risk</div>
+              <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--red)', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
+                -${isForex
+                  ? fc.risk.toLocaleString(undefined, { maximumFractionDigits: 0 })
+                  : ft.risk.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </div>
+            </div>
+            <div style={{
+              background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.18)',
+              borderRadius: 7, padding: '8px 10px',
+            }}>
+              <div style={{ fontSize: '0.57rem', fontWeight: 700, color: '#6ee7b7', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Reward</div>
+              <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--green)', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
+                +${isForex
+                  ? fc.reward.toLocaleString(undefined, { maximumFractionDigits: 0 })
+                  : ft.reward.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </div>
+            </div>
+          </div>
+
+          {/* R:R pill */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '7px 12px', background: 'var(--raised)', borderRadius: 7, border: '1px solid var(--border)',
+          }}>
+            <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.09em' }}>R : R</span>
+            <span style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
+              1 : {rrValue.toFixed(2)}
+            </span>
+          </div>
+
+          {/* Secondary: TP + pip/point risk */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            {[
+              {
+                label: 'Take Profit',
+                value: isForex ? tpValue.toFixed(4) : tpValue.toFixed(2),
+                color: 'var(--blue)',
+              },
+              {
+                label: isForex ? 'Pip Risk' : 'Point Risk',
+                value: isForex ? `${fc.pips.toFixed(1)} pips` : `${ft.stopDist.toFixed(2)} pts`,
+                color: 'var(--amber)',
+              },
+            ].map(({ label, value, color }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
+                  {label}
+                </span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 600, color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}>
+                  {value}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
