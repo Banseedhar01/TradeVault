@@ -36,16 +36,28 @@ export const MarketClockCard = () => {
     return `${h}:${m}`;
   };
 
+  // Forex is closed Friday 5 PM NY → Sunday 5 PM NY
+  const isForexWeekend = (): boolean => {
+    const ny = toZone('America/New_York');
+    const day = ny.getDay(); // 0=Sun 1=Mon ... 5=Fri 6=Sat
+    const h   = ny.getHours();
+    if (day === 6) return true;                   // all Saturday
+    if (day === 0 && h < 17) return true;         // Sunday before 5 PM NY
+    if (day === 5 && h >= 17) return true;        // Friday from 5 PM NY onwards
+    return false;
+  };
+
   const sessions = (): Session[] => {
+    const weekend = isForexWeekend();
     const ny = toZone('America/New_York');
     const ld = toZone('Europe/London');
     const [nyH, nyM, ldH] = [ny.getHours(), ny.getMinutes(), ld.getHours()];
-    const nyOpen = (nyH > 9 || (nyH === 9 && nyM >= 30)) && nyH < 16;
-    const ldOpen = ldH >= 8 && ldH < 16;
+    const nyOpen = !weekend && (nyH > 9 || (nyH === 9 && nyM >= 30)) && nyH < 16;
+    const ldOpen = !weekend && ldH >= 8 && ldH < 16;
     return [
-      { name: 'New York',        sourceTz: 'America/New_York', openH: 9,  openM: 30, closeH: 16, closeM: 0,  isOpen: nyOpen },
-      { name: 'London',          sourceTz: 'Europe/London',    openH: 8,  openM: 0,  closeH: 16, closeM: 30, isOpen: ldOpen },
-      { name: 'NY/London Overlap', sourceTz: 'America/New_York', openH: 8, openM: 0, closeH: 12, closeM: 0,  isOpen: nyH >= 8 && nyH < 12 && ldOpen },
+      { name: 'New York',          sourceTz: 'America/New_York', openH: 9,  openM: 30, closeH: 16, closeM: 0,  isOpen: nyOpen },
+      { name: 'London',            sourceTz: 'Europe/London',    openH: 8,  openM: 0,  closeH: 16, closeM: 30, isOpen: ldOpen },
+      { name: 'NY/London Overlap', sourceTz: 'America/New_York', openH: 8,  openM: 0,  closeH: 12, closeM: 0,  isOpen: !weekend && nyH >= 8 && nyH < 12 && ldOpen },
     ];
   };
 
