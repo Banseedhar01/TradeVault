@@ -5,6 +5,7 @@ import { Badge } from '../ui/Badge';
 import { ProgressBar } from '../ui/ProgressBar';
 import { useStore } from '../../store';
 import { useDeleteAccount } from '../../hooks/useAccounts';
+import { useDeleteFirm } from '../../hooks/useFirms';
 import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface PropFirmCardProps {
@@ -29,9 +30,11 @@ const STATUS_LABEL: Record<string, string> = {
 export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
   const { setAddAccountOpen, setSelectedFirmId, activeSection, setDetailAccountId } = useStore();
   const deleteAccount = useDeleteAccount();
+  const deleteFirm = useDeleteFirm();
   const isMobile = useIsMobile();
   const [isHovered, setIsHovered]     = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmDeleteFirm, setConfirmDeleteFirm] = useState(false);
 
   const account    = accounts[0];
   const isForex    = activeSection === 'forex';
@@ -57,16 +60,62 @@ export const PropFirmCard = ({ firm, accounts }: PropFirmCardProps) => {
     setConfirmDelete(false);
   };
 
+  const handleDeleteFirm = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirmDeleteFirm) { deleteFirm.mutate(firm.id); setConfirmDeleteFirm(false); }
+    else setConfirmDeleteFirm(true);
+  };
+
+  const handleCancelDeleteFirm = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setConfirmDeleteFirm(false);
+  };
+
   // ── Empty state ────────────────────────────────────────────────
   if (!account) {
     return (
       <div className="card" style={{ flexShrink: 0, width: isMobile ? '82vw' : 288 }}>
         <div style={{ height: 3, background: `linear-gradient(90deg, ${accent}, ${accent}80)` }} />
         <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-1)' }}>{firm.name}</div>
-          <div style={{ display: 'flex', gap: 5, marginTop: 7 }}>
-            <Badge variant={isForex ? 'info' : 'warning'}>{isForex ? 'Forex' : 'Futures'}</Badge>
-            <Badge variant="neutral">{firm.platform}</Badge>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-1)' }}>{firm.name}</div>
+              <div style={{ display: 'flex', gap: 5, marginTop: 7 }}>
+                <Badge variant={isForex ? 'info' : 'warning'}>{isForex ? 'Forex' : 'Futures'}</Badge>
+                <Badge variant="neutral">{firm.platform}</Badge>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 5, flexShrink: 0, marginTop: 2 }}>
+              {confirmDeleteFirm ? (
+                <>
+                  <button onClick={handleDeleteFirm} style={{
+                    padding: '3px 8px', borderRadius: 5, cursor: 'pointer', fontSize: '0.68rem', fontWeight: 700,
+                    background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.35)', color: '#ef4444',
+                  }}>Confirm</button>
+                  <button onClick={handleCancelDeleteFirm} style={{
+                    padding: '3px 8px', borderRadius: 5, cursor: 'pointer', fontSize: '0.68rem', fontWeight: 600,
+                    background: 'var(--raised)', border: '1px solid var(--border)', color: 'var(--text-3)',
+                  }}>Cancel</button>
+                </>
+              ) : (
+                <button onClick={handleDeleteFirm} title="Delete firm" style={{
+                  width: 26, height: 26, borderRadius: 5, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'transparent', border: '1px solid transparent',
+                  color: 'var(--text-4)', transition: 'all 120ms',
+                }}
+                  onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = 'rgba(239,68,68,0.1)'; b.style.color = '#ef4444'; b.style.borderColor = 'rgba(239,68,68,0.25)'; }}
+                  onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = 'transparent'; b.style.color = 'var(--text-4)'; b.style.borderColor = 'transparent'; }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    <path d="M10 11v6M14 11v6"/>
+                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
         </div>
         <div style={{ padding: '32px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
