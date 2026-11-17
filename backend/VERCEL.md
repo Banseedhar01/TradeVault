@@ -26,7 +26,7 @@ Database selection is controlled by the backend's `APP_ENV`, not by the frontend
 Separate database-scoped Atlas users can additionally restrict credentials.
 
 Vercel Authentication stays enabled for the Preview frontend and backend.
-The frontend's `api/[...path].js` function forwards only supported API paths to
+The frontend's `api/preview-proxy.js` function forwards only supported API paths to
 the stable develop backend alias. Its automation credential stays on the server
 and is never included in browser JavaScript. The proxy returns 404 in Production.
 

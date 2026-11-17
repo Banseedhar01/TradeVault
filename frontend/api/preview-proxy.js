@@ -25,6 +25,15 @@ export default async function handler(request, response) {
 
   try {
     const incoming = new URL(request.url, 'https://frontend.invalid');
+    // Vercel rewrites carry the full nested API path to this single function.
+    const rewrittenPath = request.query?.__preview_path ?? incoming.searchParams.get('__preview_path');
+    if (rewrittenPath !== null && rewrittenPath !== undefined) {
+      if (typeof rewrittenPath !== 'string') {
+        return fail(response, 404, 'NOT_FOUND', 'Not found');
+      }
+      incoming.pathname = new URL(`/api/${rewrittenPath}`, incoming.origin).pathname;
+    }
+    incoming.searchParams.delete('__preview_path');
     const isHealth = incoming.pathname === '/api/health';
     if (!isHealth && !/^\/api\/(firms|accounts|trades|analytics)(\/|$)/.test(incoming.pathname)) {
       return fail(response, 404, 'NOT_FOUND', 'Not found');

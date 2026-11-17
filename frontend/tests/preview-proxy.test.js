@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import handler from '../api/[...path].js';
+import handler from '../api/preview-proxy.js';
 
 const backend = 'https://tradevault-api-git-develop-banseedhar01s-projects.vercel.app';
 
@@ -77,6 +77,24 @@ test('health check uses the same protected development backend', async t => {
     return Response.json({ success: true, data: { status: 'healthy' } });
   });
   await handler({ method: 'GET', url: '/api/health', headers: {} }, response);
+  assert.equal(response.statusCode, 200);
+});
+
+test('nested rewritten paths preserve updates and query filters', async t => {
+  const response = setup(t);
+  t.mock.method(globalThis, 'fetch', async (url, options) => {
+    assert.equal(url.href, `${backend}/api/accounts/example/stages/0?filter=active`);
+    assert.equal(options.method, 'PUT');
+    assert.equal(options.body, JSON.stringify({ status: 'passed' }));
+    return Response.json({ success: true });
+  });
+  await handler({
+    method: 'PUT',
+    url: '/api/preview-proxy?__preview_path=accounts/example/stages/0&filter=active',
+    query: { __preview_path: 'accounts/example/stages/0' },
+    headers: { 'content-type': 'application/json' },
+    body: { status: 'passed' },
+  }, response);
   assert.equal(response.statusCode, 200);
 });
 
