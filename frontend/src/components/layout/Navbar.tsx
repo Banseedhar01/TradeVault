@@ -1,9 +1,12 @@
 import { useStore } from '../../store';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { useIsFetching } from '@tanstack/react-query';
 
 export const Navbar = () => {
   const { activeSection, setActiveSection } = useStore();
   const isMobile = useIsMobile();
+  const isUpdating = useIsFetching() > 0;
+  const statusColor = isUpdating ? '#60a5fa' : '#10b981';
 
   return (
     <nav
@@ -47,7 +50,7 @@ export const Navbar = () => {
         </div>
 
         {/* Live dot */}
-        <div style={{
+        <div role="status" aria-live="polite" aria-label={isUpdating ? 'Updating data' : 'Live'} style={{
           display: 'flex', alignItems: 'center', gap: 7,
           padding: isMobile ? '6px 10px' : '6px 12px', borderRadius: 8,
           background: 'rgba(16,185,129,0.08)',
@@ -55,14 +58,14 @@ export const Navbar = () => {
         }}>
           <span style={{ position: 'relative', display: 'flex', width: 7, height: 7 }}>
             <span style={{
-              position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981',
+              position: 'absolute', inset: 0, borderRadius: '50%', background: statusColor,
               animation: 'ping 1.2s cubic-bezier(0,0,0.2,1) infinite', opacity: 0.6,
             }} />
-            <span style={{ position: 'relative', width: 7, height: 7, borderRadius: '50%', background: '#10b981' }} />
+            <span style={{ position: 'relative', width: 7, height: 7, borderRadius: '50%', background: statusColor }} />
           </span>
           {!isMobile && (
-            <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#10b981', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              Live
+            <span style={{ fontSize: '0.65rem', fontWeight: 700, color: statusColor, letterSpacing: '0.1em', textTransform: 'uppercase', minWidth: 55 }}>
+              {isUpdating ? 'Updating' : 'Live'}
             </span>
           )}
         </div>

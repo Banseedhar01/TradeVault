@@ -174,6 +174,7 @@ export const PerformanceCard = () => {
                 <YAxis hide domain={['auto', 'auto']} />
                 <Tooltip content={<EqTip />} />
                 <Area
+                  animationDuration={150}
                   type="monotone" dataKey="balance"
                   stroke="#10b981" strokeWidth={1.75}
                   fill="url(#eqGrad)" dot={false}
@@ -195,7 +196,7 @@ export const PerformanceCard = () => {
                 <YAxis hide />
                 <ReferenceLine y={0} stroke="rgba(255,255,255,0.08)" strokeWidth={1} />
                 <Tooltip content={<PnlTip />} />
-                <Bar dataKey="pnl" radius={[3, 3, 0, 0]}>
+                <Bar dataKey="pnl" radius={[3, 3, 0, 0]} animationDuration={150}>
                   {pnlBars.map((e, i) => (
                     <Cell key={i} fill={e.pnl >= 0 ? '#10b981' : '#ef4444'} fillOpacity={0.83} />
                   ))}

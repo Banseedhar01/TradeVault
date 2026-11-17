@@ -1,4 +1,5 @@
 import { PropFirm } from '../types/firm';
+import { apiData } from '../lib/queryCache.js';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -58,12 +59,12 @@ export const firmsApi = {
       const result: ApiResponse<PropFirm[]> = await response.json();
       
       if (result.success && result.data) {
-        return result.data;
+        return apiData(['firms'], result.data);
       }
       throw new Error(result.error?.message || 'Failed to fetch firms');
     } catch (error) {
       console.warn('API not available, using mock data:', error);
-      return mockFirms;
+      return apiData(['firms'], mockFirms, true);
     }
   },
 

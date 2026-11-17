@@ -1,5 +1,6 @@
 import { Account, Stage } from '../types/account';
 import { ApiResponse } from './firms';
+import { apiData } from '../lib/queryCache.js';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -210,12 +211,12 @@ export const accountsApi = {
       const result: ApiResponse<Account[]> = await response.json();
       
       if (result.success && result.data) {
-        return result.data;
+        return apiData(['accounts'], result.data);
       }
       throw new Error(result.error?.message || 'Failed to fetch accounts');
     } catch (error) {
       console.warn('API not available, using mock data:', error);
-      return mockAccounts;
+      return apiData(['accounts'], mockAccounts, true);
     }
   },
 

@@ -61,6 +61,12 @@ give it a `VITE_` prefix. The proxy returns 404 in Production.
 Redeploy the affected environment whenever its variables change. Existing
 deployment URLs keep their original builds and configuration.
 
+Recent dashboard responses are cached in the current tab's `sessionStorage` for
+up to five minutes. Reloads show those results immediately and fetch fresh data
+in the background; the navbar shows Updating during requests. The cache is scoped
+to the frontend origin and API URL, cleared during writes, and excludes sample
+fallbacks. First visits, closed tabs, and expired caches still wait for the API.
+
 ## Development and release workflow
 
 1. Develop locally or on a feature branch, using a local development `.env`.

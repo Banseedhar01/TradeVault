@@ -1,4 +1,5 @@
 import { Trade } from '../types/trade';
+import { apiData } from '../lib/queryCache.js';
 import { ApiResponse } from './firms';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
@@ -86,12 +87,12 @@ export const tradesApi = {
       const result: ApiResponse<Trade[]> = await response.json();
       
       if (result.success && result.data) {
-        return result.data;
+        return apiData(['trades'], result.data);
       }
       throw new Error(result.error?.message || 'Failed to fetch trades');
     } catch (error) {
       console.warn('API not available, using mock data:', error);
-      return mockTrades;
+      return apiData(['trades'], mockTrades, true);
     }
   },
 

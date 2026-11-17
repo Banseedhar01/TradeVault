@@ -1,4 +1,5 @@
 import { Analytics, EquityPoint, CalendarData } from '../types/analytics';
+import { apiData } from '../lib/queryCache.js';
 import { ApiResponse } from './firms';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
@@ -64,12 +65,12 @@ export const analyticsApi = {
       const result: ApiResponse<Analytics> = await response.json();
       
       if (result.success && result.data) {
-        return result.data;
+        return apiData(['analytics', accountId, stageId, days], result.data);
       }
       throw new Error(result.error?.message || 'Failed to fetch analytics');
     } catch (error) {
       console.warn('API not available, using mock data:', error);
-      return mockAnalytics;
+      return apiData(['analytics', accountId, stageId, days], mockAnalytics, true);
     }
   },
 
@@ -84,12 +85,12 @@ export const analyticsApi = {
       const result: ApiResponse<EquityPoint[]> = await response.json();
       
       if (result.success && result.data) {
-        return result.data;
+        return apiData(['equity-curve', accountId, stageId, days], result.data);
       }
       throw new Error(result.error?.message || 'Failed to fetch equity curve');
     } catch (error) {
       console.warn('API not available, using mock data:', error);
-      return mockEquityCurve;
+      return apiData(['equity-curve', accountId, stageId, days], mockEquityCurve, true);
     }
   },
 
@@ -105,12 +106,12 @@ export const analyticsApi = {
       const result: ApiResponse<CalendarData> = await response.json();
       
       if (result.success && result.data) {
-        return result.data;
+        return apiData(['calendar-data', accountId, stageId, year, month], result.data);
       }
       throw new Error(result.error?.message || 'Failed to fetch calendar data');
     } catch (error) {
       console.warn('API not available, using mock data:', error);
-      return mockCalendarData;
+      return apiData(['calendar-data', accountId, stageId, year, month], mockCalendarData, true);
     }
   },
 };
