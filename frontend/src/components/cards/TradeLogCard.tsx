@@ -8,6 +8,7 @@ import { TableSkeleton } from '../ui/SkeletonLoader';
 import { useStore } from '../../store';
 import { Trade } from '../../types/trade';
 import { matchesStatusFilter } from '../../utils/account';
+import { QueryError } from '../ui/QueryError';
 
 const PER_PAGE = 10;
 
@@ -45,9 +46,17 @@ const Stat = ({ label, value, color = 'var(--text-1)' }: { label: string; value:
 
 // ── Component ─────────────────────────────────────────────────────────
 export const TradeLogCard = () => {
-  const { data: trades, isLoading, error } = useTrades();
-  const { data: accounts } = useAccounts();
-  const { data: firms }    = useFirms();
+  const tradesQuery = useTrades();
+  const accountsQuery = useAccounts();
+  const firmsQuery = useFirms();
+  const { data: trades, isLoading } = tradesQuery;
+  const { data: accounts } = accountsQuery;
+  const { data: firms } = firmsQuery;
+  const error = tradesQuery.error || accountsQuery.error || firmsQuery.error;
+  const errorBanner = error && <QueryError title="Could not load the trade log" error={error}
+    hasCachedData={trades !== undefined && accounts !== undefined && firms !== undefined}
+    isRetrying={tradesQuery.isFetching || accountsQuery.isFetching || firmsQuery.isFetching}
+    onRetry={() => { void tradesQuery.refetch(); void accountsQuery.refetch(); void firmsQuery.refetch(); }} />;
   const { setAddTradeOpen, setEditTradeId, activeSection, viewAccountId, accountStatusFilter } = useStore();
   const deleteTrade = useDeleteTrade();
   const isMobile = useIsMobile();
@@ -118,20 +127,17 @@ export const TradeLogCard = () => {
   const resetPage = (fn: () => void) => { fn(); setPage(1); };
 
   // ── Loading / error states ────────────────────────────────────────
-  if (isLoading) return (
+  if (isLoading || accountsQuery.isLoading || firmsQuery.isLoading) return (
     <div className="card">
       <div className="card-header"><span className="card-title">Trade Log</span></div>
       <div className="card-body"><TableSkeleton rows={6} /></div>
     </div>
   );
 
-  if (error) return (
+  if (!trades || !accounts || !firms) return (
     <div className="card">
       <div className="card-header"><span className="card-title">Trade Log</span></div>
-      <div className="card-body" style={{ alignItems: 'center', justifyContent: 'center', padding: 48 }}>
-        <span style={{ color: 'var(--red)', marginBottom: 12 }}>Failed to load trades</span>
-        <Button variant="secondary" size="sm" onClick={() => window.location.reload()}>Retry</Button>
-      </div>
+      {errorBanner}
     </div>
   );
 
@@ -145,6 +151,7 @@ export const TradeLogCard = () => {
 
   return (
     <div className="card">
+      {errorBanner}
 
       {/* ── Header ── */}
       <div className="card-header">

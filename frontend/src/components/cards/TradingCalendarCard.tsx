@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useCalendarData } from '../../hooks/useAnalytics';
 import { useTrades, useDeleteTrade } from '../../hooks/useTrades';
 import { useStore } from '../../store';
+import { QueryError } from '../ui/QueryError';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { Button } from '../ui/Button';
 import { Trade } from '../../types/trade';
@@ -84,8 +85,10 @@ export const TradingCalendarCard = () => {
   const { viewAccountId }         = useStore();
   const isMobile                  = useIsMobile();
 
-  const { data, isLoading } = useCalendarData(viewAccountId, undefined, cur.getFullYear(), cur.getMonth() + 1);
-  const { data: allTrades } = useTrades();
+  const calendarQuery = useCalendarData(viewAccountId, undefined, cur.getFullYear(), cur.getMonth() + 1);
+  const tradesQuery = useTrades();
+  const { data, isLoading } = calendarQuery;
+  const { data: allTrades } = tradesQuery;
   const deleteTrade         = useDeleteTrade();
 
   const getDays = () => {
@@ -194,6 +197,9 @@ export const TradingCalendarCard = () => {
       </div>
 
       <div className="card-body" style={{ padding: 0, flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {calendarQuery.error && <QueryError title="Could not load the calendar" error={calendarQuery.error}
+          hasCachedData={data !== undefined} isRetrying={calendarQuery.isFetching}
+          onRetry={() => { void calendarQuery.refetch(); }} />}
         {isLoading ? (
           <div style={{ padding: 16, display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
             {Array.from({ length: 35 }, (_, i) => (
@@ -201,7 +207,7 @@ export const TradingCalendarCard = () => {
                 style={{ aspectRatio: '1', borderRadius: 6, background: 'var(--raised)' }} />
             ))}
           </div>
-        ) : (
+        ) : !data ? null : (
           <>
             {/* ── Monthly stats strip ── */}
             {monthStats && (
@@ -430,7 +436,12 @@ export const TradingCalendarCard = () => {
 
                 {/* Trade rows */}
                 <div style={{ overflowY: 'auto', flex: 1 }}>
-                  {dayTrades.length === 0 ? (
+                  {tradesQuery.error && <QueryError title="Could not load this day's trades" error={tradesQuery.error}
+                    hasCachedData={allTrades !== undefined} isRetrying={tradesQuery.isFetching}
+                    onRetry={() => { void tradesQuery.refetch(); }} />}
+                  {tradesQuery.isLoading ? (
+                    <div style={{ padding: 20, color: 'var(--text-3)' }}>Loading trades…</div>
+                  ) : !allTrades ? null : dayTrades.length === 0 ? (
                     <div style={{ padding: '20px 14px', textAlign: 'center', color: 'var(--text-4)', fontSize: '0.78rem' }}>
                       No trades recorded for this day
                     </div>

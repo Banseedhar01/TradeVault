@@ -74,8 +74,8 @@ fallbacks. First visits, closed tabs, and expired caches still wait for the API.
 3. Verify the Preview UI, API reads, and create/edit/delete operations.
 4. Merge the tested changes into `main` to deploy Production.
 
-CI runs frontend tests and its production build, plus a Python 3.12 backend
-import check. Vercel deployments are separate from CI; confirm both project
+CI runs frontend tests and its production build, plus Python 3.12 backend
+integration tests against an isolated local MongoDB replica set. Vercel deployments are separate from CI; confirm both project
 deployments show Ready for the expected commit.
 
 ## Verification and rollback
@@ -83,8 +83,10 @@ deployments show Ready for the expected commit.
 - Production `/health` should return `success: true` with `status: healthy`.
 - After Vercel sign-in, Preview frontend `/api/health` checks its backend through
   the proxy.
-- Check JSON `success` values, not just HTTP statuses. API error envelopes can
-  use HTTP 200, and frontend sample-data fallbacks can hide failed requests.
+- Check JSON `success` values, not just HTTP statuses. Legacy API error envelopes
+  can use HTTP 200; the frontend treats them as failures and provides Retry.
+  Cached data is labeled as previously loaded when a refresh fails. Form presets
+  remain available, but failed API requests never fabricate accounts or trades.
 - Confirm development test records never appear in Production. Remove temporary
   test records after verification. Do not run `backend/seed.py` against Production;
   it deletes existing records.
@@ -93,6 +95,12 @@ To roll back, restore a previously verified Vercel deployment in the affected
 project's deployment history. Preserve the Production API URL and Preview proxy
 settings. Avoid historical builds pointing to retired hosting. Code rollback
 does not roll back database records.
+
+Trade changes and their daily statistics/stage P&L use one MongoDB transaction.
+Closed-trade edits refresh both old and new date/account/stage locations, and
+empty trading days are removed. A failed statistics update rolls back the trade
+change. Atlas supports replica sets; local MongoDB must also run as a replica set.
+See `backend/tests/README.md` for the isolated integration-test setup.
 
 ## Retiring legacy hosting
 

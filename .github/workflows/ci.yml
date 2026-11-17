@@ -27,7 +27,7 @@ jobs:
           VITE_API_URL: https://tradevault-api.vercel.app/api
 
   backend:
-    name: Backend Import Check
+    name: Backend Tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -43,3 +43,16 @@ jobs:
         env:
           MONGODB_URI: mongodb://localhost:27017/test
           APP_ENV: development
+      - name: Start isolated MongoDB replica set
+        run: |
+          docker run --detach --name tradevault-tests --publish 27017:27017 mongo:7 --replSet tradevault-tests --bind_ip_all
+          for attempt in $(seq 1 30); do
+            if docker exec tradevault-tests mongosh --quiet --eval 'db.adminCommand({ping:1})'; then
+              break
+            fi
+            sleep 1
+          done
+          docker exec tradevault-tests mongosh --quiet --eval 'rs.initiate({_id:"tradevault-tests",members:[{_id:0,host:"localhost:27017"}]})'
+      - run: python -m unittest discover -s tests -v
+        env:
+          TEST_MONGODB_URI: mongodb://127.0.0.1:27017/?replicaSet=tradevault-tests

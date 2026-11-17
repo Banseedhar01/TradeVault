@@ -5,6 +5,7 @@ import { Select } from '../ui/Select';
 import { useStore } from '../../store';
 import { useCreateAccount } from '../../hooks/useAccounts';
 import { useFirms } from '../../hooks/useFirms';
+import { QueryError } from '../ui/QueryError';
 import { Account, Stage } from '../../types/account';
 
 interface StageFormData {
@@ -40,7 +41,8 @@ const sectionLabel: CSSProperties = {
 
 export const AddAccountForm = () => {
   const { isAddAccountOpen, setAddAccountOpen, selectedFirmId } = useStore();
-  const { data: firms } = useFirms();
+  const firmsQuery = useFirms();
+  const { data: firms } = firmsQuery;
   const createAccountMutation = useCreateAccount();
 
   const [formData, setFormData] = useState({
@@ -137,12 +139,16 @@ export const AddAccountForm = () => {
         style={{ display: 'flex', flexDirection: 'column', gap: 20, paddingBottom: 0 }}
       >
         {/* Firm */}
+        {firmsQuery.error && <QueryError title="Could not load available firms" error={firmsQuery.error}
+          hasCachedData={firms !== undefined} isRetrying={firmsQuery.isFetching}
+          onRetry={() => { void firmsQuery.refetch(); }} />}
         <Select
           label="Prop Firm"
           value={formData.firm_id}
           onChange={e => setFormData(prev => ({ ...prev, firm_id: e.target.value }))}
           options={firmOptions}
           error={errors.firm_id}
+          disabled={!firms}
         />
 
         {/* Plan name */}

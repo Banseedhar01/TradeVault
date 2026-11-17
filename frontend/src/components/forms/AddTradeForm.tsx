@@ -7,6 +7,7 @@ import { useCreateTrade, useUpdateTrade, useTrades } from '../../hooks/useTrades
 import { useAccounts } from '../../hooks/useAccounts';
 import { useFirms } from '../../hooks/useFirms';
 import { Trade } from '../../types/trade';
+import { QueryError } from '../ui/QueryError';
 
 const todayIST = () =>
   new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
@@ -46,9 +47,12 @@ const blankForm = () => ({
 
 export const AddTradeForm = () => {
   const { isAddTradeOpen, setAddTradeOpen, activeSection, editTradeId, setEditTradeId } = useStore();
-  const { data: accounts } = useAccounts();
-  const { data: firms }    = useFirms();
-  const { data: trades }   = useTrades();
+  const accountsQuery = useAccounts();
+  const firmsQuery = useFirms();
+  const tradesQuery = useTrades();
+  const { data: accounts } = accountsQuery;
+  const { data: firms } = firmsQuery;
+  const { data: trades } = tradesQuery;
   const createTrade = useCreateTrade();
   const updateTrade = useUpdateTrade();
 
@@ -168,6 +172,13 @@ export const AddTradeForm = () => {
   return (
     <SlideOver isOpen={isAddTradeOpen} onClose={handleClose} title={isEditMode ? 'Edit Trade' : 'Add Trade'}>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        {(accountsQuery.error || firmsQuery.error || (isEditMode && tradesQuery.error)) && (
+          <QueryError title="Could not load trade form data"
+            error={accountsQuery.error || firmsQuery.error || tradesQuery.error}
+            hasCachedData={accounts !== undefined && firms !== undefined && (!isEditMode || trades !== undefined)}
+            isRetrying={accountsQuery.isFetching || firmsQuery.isFetching || tradesQuery.isFetching}
+            onRetry={() => { void accountsQuery.refetch(); void firmsQuery.refetch(); void tradesQuery.refetch(); }} />
+        )}
 
         {/* Date */}
         <Input

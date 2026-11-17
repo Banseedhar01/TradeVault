@@ -14,11 +14,14 @@ import { useStore } from './store'
 import { useFirms } from './hooks/useFirms'
 import { useAccounts } from './hooks/useAccounts'
 import { useIsMobile } from './hooks/useIsMobile'
+import { QueryError } from './components/ui/QueryError'
 
 function App() {
   const { activeSection, detailAccountId, setAddFirmOpen } = useStore()
-  const { data: firms, isLoading: firmsLoading } = useFirms()
-  const { data: accounts } = useAccounts()
+  const firmsQuery = useFirms()
+  const accountsQuery = useAccounts()
+  const { data: firms } = firmsQuery
+  const { data: accounts } = accountsQuery
   const isMobile = useIsMobile()
 
   const sectionFirms = firms?.filter(f => f.market_type === activeSection) || []
@@ -43,14 +46,22 @@ function App() {
             </span>
           </div>
 
+          {(firmsQuery.error || accountsQuery.error) && (
+            <QueryError title="Could not load firms or accounts" error={firmsQuery.error || accountsQuery.error}
+              hasCachedData={firms !== undefined && accounts !== undefined}
+              isRetrying={firmsQuery.isFetching || accountsQuery.isFetching}
+              onRetry={() => { void firmsQuery.refetch(); void accountsQuery.refetch() }} />
+          )}
           <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 4 }}>
-            {firmsLoading
+            {firmsQuery.isLoading || accountsQuery.isLoading
               ? Array(3).fill(0).map((_, i) => (
                   <div key={i} className="animate-pulse" style={{
                     flexShrink: 0, width: 300, height: 280, borderRadius: 14,
                     background: 'var(--surface)', border: '1px solid var(--border)',
                   }} />
                 ))
+              : (firmsQuery.error && !firms) || (accountsQuery.error && !accounts)
+                ? null
               : sectionFirms.length === 0
                 ? (
                   <div style={{

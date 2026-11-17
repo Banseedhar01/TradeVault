@@ -9,6 +9,7 @@ import { useStore } from '../../store';
 import { useAccounts } from '../../hooks/useAccounts';
 import { useFirms } from '../../hooks/useFirms';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { QueryError } from '../ui/QueryError';
 
 const STATUS_COLOR: Record<string, string> = {
   passed:      '#10b981',
@@ -26,18 +27,28 @@ const STATUS_LABEL: Record<string, string> = {
 
 export const AccountDetailPage = () => {
   const { detailAccountId, setDetailAccountId } = useStore();
-  const { data: accounts } = useAccounts();
-  const { data: firms }    = useFirms();
+  const accountsQuery = useAccounts();
+  const firmsQuery = useFirms();
+  const { data: accounts } = accountsQuery;
+  const { data: firms } = firmsQuery;
   const isMobile           = useIsMobile();
 
   const account = accounts?.find(a => a.id === detailAccountId);
   const firm    = firms?.find(f => f.id === account?.firm_id);
+  const error = accountsQuery.error || firmsQuery.error;
+  const errorBanner = error && <QueryError title="Could not load this account" error={error}
+    hasCachedData={!!account && !!firm} isRetrying={accountsQuery.isFetching || firmsQuery.isFetching}
+    onRetry={() => { void accountsQuery.refetch(); void firmsQuery.refetch(); }} />;
 
   if (!account || !firm) {
     return (
       <Layout>
+        {errorBanner}
         <div style={{ padding: '28px 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
-          <span style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>Loading account…</span>
+          <span style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>
+            {accountsQuery.isLoading || firmsQuery.isLoading ? 'Loading account…' : error ? 'Account data is unavailable.' : 'Account not found.'}
+            <button className="btn btn-sm btn-secondary" onClick={() => setDetailAccountId(undefined)} style={{ marginLeft: 12 }}>Back to dashboard</button>
+          </span>
         </div>
       </Layout>
     );
@@ -58,6 +69,7 @@ export const AccountDetailPage = () => {
   return (
     <Layout>
       <div style={{ width: '100%', padding: isMobile ? '0 16px 32px' : '0 24px 40px', boxSizing: 'border-box' }}>
+        {errorBanner}
 
         {/* ── Sticky back bar ── */}
         <div style={{

@@ -5,8 +5,8 @@ const VERSION = 1;
 const RESOURCES = new Set(['firms', 'accounts', 'trades', 'analytics', 'equity-curve', 'calendar-data']);
 const sampleQueries = new Set();
 
-// Keep existing sample-data fallbacks in the UI, but never persist them as
-// previously fetched database records. Keys match the corresponding hooks.
+// Never persist sample-marked responses as database records. Keys match the
+// corresponding hooks; normal API failures are rejected by the request client.
 export function apiData(queryKey, data, isSample = false) {
   const key = JSON.stringify(queryKey);
   if (isSample) sampleQueries.add(key);

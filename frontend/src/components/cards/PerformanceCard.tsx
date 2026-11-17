@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { useAnalytics, useEquityCurve } from '../../hooks/useAnalytics';
 import { CardSkeleton } from '../ui/SkeletonLoader';
+import { QueryError } from '../ui/QueryError';
 
 type Range = '1W' | '1M' | '3M' | 'YTD' | 'All';
 
@@ -55,10 +56,21 @@ export const PerformanceCard = () => {
   const isMobile = useIsMobile();
   const days = DAYS[range];
   const { viewAccountId } = useStore();
-  const { data: analytics, isLoading: al } = useAnalytics(viewAccountId, undefined, days);
-  const { data: equity,    isLoading: el } = useEquityCurve(viewAccountId, undefined, days);
+  const analyticsQuery = useAnalytics(viewAccountId, undefined, days);
+  const equityQuery = useEquityCurve(viewAccountId, undefined, days);
+  const { data: analytics, isLoading: al } = analyticsQuery;
+  const { data: equity, isLoading: el } = equityQuery;
+  const error = analyticsQuery.error || equityQuery.error;
+  const errorBanner = error && <QueryError title="Could not load performance" error={error}
+    hasCachedData={analytics !== undefined && equity !== undefined}
+    isRetrying={analyticsQuery.isFetching || equityQuery.isFetching}
+    onRetry={() => { void analyticsQuery.refetch(); void equityQuery.refetch(); }} />;
 
   if (al || el) return <CardSkeleton />;
+  if (!analytics || !equity) return <div className="card">
+    <div className="card-header"><span className="card-title">Performance</span></div>
+    {errorBanner}
+  </div>;
 
   const pnlBars = equity?.slice(-14).map(p => ({
     date: new Date(p.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -97,6 +109,7 @@ export const PerformanceCard = () => {
       </div>
 
       {/* ── Stats strip ── */}
+      {errorBanner}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)', borderBottom: '1px solid var(--border)' }}>
         {[
           {

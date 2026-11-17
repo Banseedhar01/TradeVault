@@ -1,12 +1,18 @@
 import { useStore } from '../../store';
 import { useIsMobile } from '../../hooks/useIsMobile';
-import { useIsFetching } from '@tanstack/react-query';
+import { useIsFetching, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useSyncExternalStore } from 'react';
 
 export const Navbar = () => {
   const { activeSection, setActiveSection } = useStore();
   const isMobile = useIsMobile();
   const isUpdating = useIsFetching() > 0;
-  const statusColor = isUpdating ? '#60a5fa' : '#10b981';
+  const cache = useQueryClient().getQueryCache();
+  const subscribe = useCallback((listener: () => void) => cache.subscribe(listener), [cache]);
+  const errorCount = useCallback(() => cache.getAll().filter(query => query.state.status === 'error').length, [cache]);
+  const hasErrors = useSyncExternalStore(subscribe, errorCount) > 0;
+  const status = isUpdating ? 'Updating' : hasErrors ? 'Retry needed' : 'Live';
+  const statusColor = isUpdating ? '#60a5fa' : hasErrors ? '#ef4444' : '#10b981';
 
   return (
     <nav
@@ -50,7 +56,7 @@ export const Navbar = () => {
         </div>
 
         {/* Live dot */}
-        <div role="status" aria-live="polite" aria-label={isUpdating ? 'Updating data' : 'Live'} style={{
+        <div role="status" aria-live="polite" aria-label={status} style={{
           display: 'flex', alignItems: 'center', gap: 7,
           padding: isMobile ? '6px 10px' : '6px 12px', borderRadius: 8,
           background: 'rgba(16,185,129,0.08)',
@@ -65,7 +71,7 @@ export const Navbar = () => {
           </span>
           {!isMobile && (
             <span style={{ fontSize: '0.65rem', fontWeight: 700, color: statusColor, letterSpacing: '0.1em', textTransform: 'uppercase', minWidth: 55 }}>
-              {isUpdating ? 'Updating' : 'Live'}
+              {status}
             </span>
           )}
         </div>

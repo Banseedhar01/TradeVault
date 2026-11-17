@@ -91,6 +91,12 @@ uvicorn app.main:app --reload --port 8000
 
 API runs at `http://localhost:8000` · Swagger docs at `http://localhost:8000/docs`
 
+Trade writes use transactions so the trade and its statistics stay consistent.
+Atlas already provides a replica set. For local MongoDB, start it with a replica
+set (for this workspace: `tradevault-local`) and include
+`?replicaSet=tradevault-local` in the local URI. The isolated database tests are
+documented in [backend/tests/README.md](backend/tests/README.md).
+
 ### Frontend
 
 ```bash
