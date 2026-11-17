@@ -2,7 +2,13 @@
 .git/
 .env
 .env.*
-backend/
+backend/.env
+backend/.env.*
+backend/.venv/
+backend/.venv-vercel/
+backend/venv/
+backend/.vercel/
+backend/**/__pycache__/
 frontend/.env
 frontend/.env.local
 frontend/.env.*.local
