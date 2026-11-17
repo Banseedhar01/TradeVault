@@ -23,9 +23,9 @@ A personal prop trading dashboard to track prop firm accounts, log trades, and m
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 19, TypeScript, Vite, TailwindCSS v4, Zustand, TanStack Query |
-| Backend | FastAPI, Python 3.11, Beanie ODM, Motor |
+| Backend | FastAPI, Python 3.12, Beanie ODM, Motor |
 | Database | MongoDB Atlas |
-| Deployment | Vercel (frontend) + Render (backend) |
+| Deployment | Vercel (frontend and backend) |
 | CI/CD | GitHub Actions |
 
 ---
@@ -68,7 +68,7 @@ TradeVault/
 
 ### Prerequisites
 - Node.js 20+
-- Python 3.11+
+- Python 3.12
 - MongoDB Atlas account
 
 ### Backend
@@ -117,15 +117,17 @@ App runs at `http://localhost:5174`
 | Service | URL |
 |---------|-----|
 | Frontend | [trade-vault-six.vercel.app](https://trade-vault-six.vercel.app) |
-| Backend | [tradevault-sexf.onrender.com](https://tradevault-sexf.onrender.com) |
+| Backend | [tradevault-api.vercel.app](https://tradevault-api.vercel.app) |
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for the full setup guide.
+See [backend/VERCEL.md](backend/VERCEL.md) for current backend deployment and
+rollback instructions. [DEPLOYMENT.md](DEPLOYMENT.md) describes the previous
+Render setup, which remains available during migration observation.
 
 ### Branch Strategy
 
 | Branch | Purpose | Deploys to |
 |--------|---------|------------|
-| `main` | Production | Vercel production + Render |
+| `main` | Production | Vercel frontend; legacy Render backend workflow retained during observation |
 | `develop` | Staging / active development | Vercel preview |
 | `feature/*` | Feature branches | Vercel preview (on PR) |
 
