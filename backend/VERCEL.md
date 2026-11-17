@@ -14,6 +14,33 @@ and Python 3.12. MongoDB remains on Atlas; no data migration is required.
   `/health` after its status becomes Ready.
 - Render remains available for rollback during observation.
 
+## Production and Preview separation
+
+| Frontend environment | API route | Backend environment | Database |
+| --- | --- | --- | --- |
+| Production (`main`) | `https://tradevault-api.vercel.app/api` | `APP_ENV=production` | `tradevault` |
+| Preview (`develop`) | Same-origin `/api` server-side proxy | `APP_ENV=development` | `tradevault_dev` |
+
+Both databases currently use the same Atlas cluster and connection secret.
+Database selection is controlled by the backend's `APP_ENV`, not by the frontend.
+Separate database-scoped Atlas users can additionally restrict credentials.
+
+Vercel Authentication stays enabled for the Preview frontend and backend.
+The frontend's `api/preview-proxy.js` function forwards only supported API paths to
+the stable develop backend alias. Its automation credential stays on the server
+and is never included in browser JavaScript. The proxy returns 404 in Production.
+
+Configure these frontend **Preview-only** variables:
+
+- `VITE_API_URL=/api`
+- `PREVIEW_BACKEND_URL=https://tradevault-api-git-develop-banseedhar01s-projects.vercel.app`
+- `PREVIEW_BACKEND_BYPASS_SECRET`: a backend Protection Bypass for Automation
+  credential, stored as a Secret. Never prefix it with `VITE_`.
+
+Keep the frontend Production `VITE_API_URL` pointed at the production backend.
+Redeploy the relevant environment after changing variables. Preview `/api/health`
+checks the development backend through the protected proxy.
+
 Verification on November 17, 2026 found the same pre-existing account/trade
 schema validation failures on Render and Vercel, and an empty firms collection
 on both. MongoDB connectivity, health, analytics, and frontend CORS passed.
@@ -36,12 +63,13 @@ Set these in the backend project's Vercel Environment Variables settings:
 | --- | --- | --- |
 | Production | `MONGODB_URI` | Existing production Atlas connection string |
 | Production | `APP_ENV` | `production` |
-| Preview | `MONGODB_URI` | Atlas credentials restricted to the development database |
+| Preview | `MONGODB_URI` | Shared Atlas connection secret (or a development-scoped Atlas user) |
 | Preview | `APP_ENV` | `development` |
 
 Production uses the `tradevault` database. Preview and local development use
-`tradevault_dev`. Do not put secrets in Git or configure production credentials
-for Preview. Redeploy after changing environment variables.
+`tradevault_dev`. Do not put secrets in Git. Keep `APP_ENV=production` scoped to
+Production and `APP_ENV=development` scoped to Preview. Redeploy after changing
+environment variables.
 
 Ensure Atlas network access permits the deployed function to connect. Select a
 Vercel function region near Atlas. Keep MongoDB connection limits in mind when
