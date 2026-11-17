@@ -57,8 +57,7 @@ TradeVault/
 │   └── .python-version
 ├── .github/
 │   └── workflows/
-│       ├── ci.yml             # Build checks on every push
-│       └── deploy-backend.yml # Render deploy on backend changes to main
+│       └── ci.yml     # Tests and build checks; Vercel handles deployments
 └── DEPLOYMENT.md      # Full deployment guide
 ```
 
@@ -119,15 +118,14 @@ App runs at `http://localhost:5174`
 | Frontend | [trade-vault-six.vercel.app](https://trade-vault-six.vercel.app) |
 | Backend | [tradevault-api.vercel.app](https://tradevault-api.vercel.app) |
 
-See [backend/VERCEL.md](backend/VERCEL.md) for current backend deployment and
-rollback instructions. [DEPLOYMENT.md](DEPLOYMENT.md) describes the previous
-Render setup, which remains available during migration observation.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the Vercel setup and
+[backend/VERCEL.md](backend/VERCEL.md) for backend configuration and rollback.
 
 ### Branch Strategy
 
 | Branch | Purpose | Deploys to |
 |--------|---------|------------|
-| `main` | Production | Vercel frontend and backend; legacy Render workflow retained during observation |
+| `main` | Production | Vercel frontend and backend |
 | `develop` | Staging / active development | Vercel preview |
 | `feature/*` | Feature branches | Vercel preview (on PR) |
 

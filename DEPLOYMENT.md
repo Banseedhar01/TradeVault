@@ -1,287 +1,101 @@
-# TradeVault — Deployment, CI/CD & Environment Management Guide
+# TradeVault deployment
 
-## Context
-Deploy TradeVault frontend (React/Vite) to Vercel and backend (FastAPI/Python) to Render. Set up GitHub Actions CI/CD, manage dev/prod environment variables cleanly, and enforce proper MongoDB Atlas database separation. Currently there are no CI/CD configs, no vercel.json, no render.yaml, and MongoDB credentials are committed directly in `.env` (security issue to fix first).
+TradeVault runs on two Vercel projects connected to the same GitHub repository.
+MongoDB Atlas stores application data in separate production and development
+databases. GitHub Actions runs checks; Vercel deploys Git changes automatically.
 
----
+## Projects and stable URLs
 
-## Current State Audit
+| Project | Root directory | Framework | Production branch |
+| --- | --- | --- | --- |
+| `trade-vault` | `frontend` | Vite | `main` |
+| `tradevault-api` | `backend` | FastAPI | `main` |
 
-| Item | Status |
-|------|--------|
-| `.env` committed with real credentials | ⚠️ Fix immediately |
-| Frontend `VITE_API_URL` env var pattern | ✅ Already correct |
-| Backend `APP_ENV` → DB name selection | ✅ Already in `app/database.py` |
-| CORS: localhost-only origins | ⚠️ Must add production domain |
-| CI/CD configs | ❌ None exist |
-| `render.yaml` / `vercel.json` | ❌ None exist |
+| Environment | Frontend | Backend | Database |
+| --- | --- | --- | --- |
+| Production | https://trade-vault-six.vercel.app | https://tradevault-api.vercel.app | `tradevault` |
+| Development Preview | https://trade-vault-git-develop-banseedhar01s-projects.vercel.app | https://tradevault-api-git-develop-banseedhar01s-projects.vercel.app | `tradevault_dev` |
 
----
+Bookmark these stable URLs. Unique deployment URLs are immutable and keep the
+API configuration from when they were built. Older Preview links can point to
+the production API even after current Preview settings have been separated.
 
-## Phase 0 — Security Fix (Do This First)
+## Backend settings
 
-**1. Rotate MongoDB credentials** — current password is committed in `backend/.env`. Go to MongoDB Atlas → Database Access → edit user → generate new password.
+Set the Root Directory to `backend` in Vercel's Build and Deployment settings,
+and select FastAPI. Under Settings → Environments → Production → Branch Tracking,
+select `main`. Connect `Banseedhar01/TradeVault` under Settings → Git.
 
-**2. Verify `.gitignore` excludes `.env`:**
-```
-# Add to backend/.gitignore
-.env
-__pycache__/
-*.pyc
-.venv/
+The backend uses Python 3.12 and the native `app/main.py:app` entrypoint.
+`backend/vercel.json` sets the function's maximum duration to 60 seconds.
 
-# Add to frontend/.gitignore
-.env
-.env.local
-.env.production.local
-dist/
-node_modules/
-```
+| Environment | Variable | Value |
+| --- | --- | --- |
+| Production | `MONGODB_URI` | Atlas connection secret |
+| Production | `APP_ENV` | `production` |
+| Preview | `MONGODB_URI` | Atlas connection secret |
+| Preview | `APP_ENV` | `development` |
 
-**3. If `.env` was ever committed**, remove it from git history:
-```bash
-git filter-branch --force --index-filter \
-  "git rm --cached --ignore-unmatch backend/.env" \
-  --prune-empty --tag-name-filter cat -- --all
-git push origin --force --all
-```
+The URI selects the Atlas cluster; `APP_ENV` selects the database in
+`backend/app/database.py`. Currently both environments share the cluster and
+connection secret. Separate Atlas users restricted to each database can provide
+additional credential isolation. Never commit connection strings or passwords.
 
----
+## Frontend settings
 
-## Phase 1 — Environment Files
+Set the frontend project's Root Directory to `frontend`, framework to Vite, and
+Production Branch to `main`.
 
-### Frontend (`frontend/`)
+| Environment | Variable | Value |
+| --- | --- | --- |
+| Production | `VITE_API_URL` | `https://tradevault-api.vercel.app/api` |
+| Preview | `VITE_API_URL` | `/api` |
+| Preview | `PREVIEW_BACKEND_URL` | `https://tradevault-api-git-develop-banseedhar01s-projects.vercel.app` |
+| Preview | `PREVIEW_BACKEND_BYPASS_SECRET` | Backend automation credential, stored as a Secret |
 
-**`frontend/.env`** — dev only, gitignored:
-```
-VITE_API_URL=http://localhost:8000/api
-```
+Keep Vercel Authentication enabled for Preview. Frontend Preview requests go
+through `frontend/api/preview-proxy.js`, which forwards supported paths to the
+protected development backend. The bypass credential stays server-side; never
+give it a `VITE_` prefix. The proxy returns 404 in Production.
 
-**`frontend/.env.production`** — committed (safe, no secrets):
-```
-VITE_API_URL=https://tradevault-api.onrender.com/api
-```
-> Vite automatically loads `.env.production` during `vite build`. No code changes needed — `import.meta.env.VITE_API_URL` already works.
+Redeploy the affected environment whenever its variables change. Existing
+deployment URLs keep their original builds and configuration.
 
-### Backend (`backend/`)
+## Development and release workflow
 
-**`backend/.env`** — dev only, gitignored:
-```
-MONGODB_URI=mongodb+srv://<user>:<password>@tradevault.yusmvyl.mongodb.net/?appName=tradevault
-APP_ENV=development
-```
+1. Develop locally or on a feature branch, using a local development `.env`.
+2. Push changes to `develop` to deploy frontend and backend Previews.
+3. Verify the Preview UI, API reads, and create/edit/delete operations.
+4. Merge the tested changes into `main` to deploy Production.
 
-**Never commit a production `.env`** — inject via Render dashboard env vars only.
+CI runs frontend tests and its production build, plus a Python 3.12 backend
+import check. Vercel deployments are separate from CI; confirm both project
+deployments show Ready for the expected commit.
 
----
+## Verification and rollback
 
-## Phase 2 — Update CORS for Production
+- Production `/health` should return `success: true` with `status: healthy`.
+- After Vercel sign-in, Preview frontend `/api/health` checks its backend through
+  the proxy.
+- Check JSON `success` values, not just HTTP statuses. API error envelopes can
+  use HTTP 200, and frontend sample-data fallbacks can hide failed requests.
+- Confirm development test records never appear in Production. Remove temporary
+  test records after verification. Do not run `backend/seed.py` against Production;
+  it deletes existing records.
 
-**File:** `backend/app/main.py`
+To roll back, restore a previously verified Vercel deployment in the affected
+project's deployment history. Preserve the Production API URL and Preview proxy
+settings. Avoid historical builds pointing to retired hosting. Code rollback
+does not roll back database records.
 
-Add the Vercel domain to `allow_origins`:
-```python
-allow_origins = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:5175",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
-    "http://127.0.0.1:5175",
-    "https://tradevault.vercel.app",     # ← your production URL
-    "https://*.vercel.app",              # ← covers Vercel preview deploys
-]
-```
-> Replace `tradevault.vercel.app` with actual URL after first Vercel deploy.
+## Retiring legacy hosting
 
----
+The repository no longer contains the Render deployment workflow or uses its
+backend URL. Complete these account-level cleanup steps:
 
-## Phase 3 — Render Setup (Backend)
+1. Stop or delete the old TradeVault backend service in the Render dashboard.
+2. Remove `RENDER_DEPLOY_HOOK_URL` from GitHub repository Settings → Secrets and
+   variables → Actions.
 
-### Create `render.yaml` at repo root
-```yaml
-services:
-  - type: web
-    name: tradevault-api
-    runtime: python
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: MONGODB_URI
-        sync: false        # fill manually in Render dashboard — never in code
-      - key: APP_ENV
-        value: production
-    healthCheckPath: /health
-    autoDeploy: true       # auto-deploys on push to main
-```
-
-### Render Dashboard Steps (first deploy)
-1. New → Web Service → connect GitHub repo
-2. Root Directory: `backend`
-3. Build: `pip install -r requirements.txt`
-4. Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-5. Add env vars manually:
-   - `MONGODB_URI` = production MongoDB Atlas URI (new credentials)
-   - `APP_ENV` = `production`
-6. Note: Free tier spins down after 15 min idle → upgrade to Starter ($7/mo) for always-on
-
----
-
-## Phase 4 — Vercel Setup (Frontend)
-
-### Create `frontend/vercel.json`
-```json
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
-}
-```
-> The `rewrites` rule is required — without it, refreshing any route returns 404 since Vercel serves static files and doesn't know about client-side routing.
-
-### Vercel Dashboard Steps (first deploy)
-1. New Project → Import GitHub repo
-2. Root Directory: `frontend`
-3. Framework: Vite (auto-detected)
-4. Environment Variable (Production): `VITE_API_URL` = `https://tradevault-api.onrender.com/api`
-5. Deploy → Vercel auto-deploys on every push to `main`
-
----
-
-## Phase 5 — GitHub Actions CI/CD
-
-### Create `.github/workflows/ci.yml` at repo root
-```yaml
-name: CI
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
-
-jobs:
-  frontend:
-    name: Frontend Build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
-      - run: npm run build
-        env:
-          VITE_API_URL: https://tradevault-api.onrender.com/api
-
-  backend:
-    name: Backend Import Check
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-      - run: pip install -r requirements.txt
-      - run: python -c "from app.main import app; print('OK')"
-        env:
-          MONGODB_URI: mongodb://localhost:27017/test   # dummy — just checks imports
-          APP_ENV: development
-```
-
-**CI does:** Verifies frontend builds and backend imports on every push/PR.  
-**Deployment is handled by:** Vercel (webhook on push to main) + Render (`autoDeploy: true`). No extra deploy steps in CI needed.
-
----
-
-## Phase 6 — MongoDB Atlas Dev/Prod Separation
-
-The split is already implemented in `backend/app/database.py`:
-```python
-db_name = "tradevault" if os.getenv("APP_ENV") == "production" else "tradevault_dev"
-```
-
-**Result:**
-- Local dev (`APP_ENV=development`) → `tradevault_dev` database
-- Render (`APP_ENV=production`) → `tradevault` database
-
-**Atlas Network Access:**
-- Dev: add your local IP in Atlas → Network Access
-- Production: add `0.0.0.0/0` (allow all) — acceptable with strong credentials on Atlas
-
-**Backups:**
-- Enable Atlas continuous backups on `tradevault` (production cluster)
-- `tradevault_dev` needs no backup
-
----
-
-## Phase 7 — Branch & Deploy Strategy
-
-```
-main      → auto-deploys to Vercel + Render (production)
-develop   → local development, manual testing only
-feature/* → PR to main → CI checks → merge → auto-deploy
-```
-
-**Workflow:**
-1. Create `feature/my-change` branch
-2. Develop locally (`.env` dev file, `tradevault_dev` DB)
-3. Push → open PR to `main` → CI runs
-4. CI passes → merge → Vercel + Render auto-deploy within ~2 min
-
----
-
-## Files to Create
-
-| File | Location | Committed? |
-|------|----------|------------|
-| `render.yaml` | repo root | ✅ Yes |
-| `frontend/vercel.json` | frontend dir | ✅ Yes |
-| `.github/workflows/ci.yml` | repo root | ✅ Yes |
-| `frontend/.env.production` | frontend dir | ✅ Yes (no secrets) |
-| `backend/.env` | backend dir | ❌ No (gitignored) |
-| `frontend/.env` | frontend dir | ❌ No (gitignored) |
-
-## Code Changes
-
-| File | Change |
-|------|--------|
-| `backend/app/main.py` | Add Vercel domain to `allow_origins` |
-| `backend/.gitignore` | Ensure `.env` is excluded |
-| `frontend/.gitignore` | Ensure `.env*` is excluded |
-
----
-
-## First-Deployment Order
-
-1. Rotate MongoDB credentials, fix `.gitignore`
-2. Push repo to GitHub
-3. Deploy backend on Render → note the service URL (e.g. `https://tradevault-api.onrender.com`)
-4. Set `VITE_API_URL` in `frontend/.env.production` to that URL
-5. Update CORS in `backend/app/main.py` with future Vercel URL (can use `*.vercel.app` wildcard initially)
-6. Deploy frontend on Vercel → note the app URL
-7. Update CORS with exact Vercel URL, redeploy backend
-8. Verify: Vercel app → Render API → MongoDB Atlas (production DB)
-
----
-
-## Verification Checklist
-
-- [ ] `https://tradevault-api.onrender.com/health` returns `{"status":"ok"}`
-- [ ] Vercel app loads without blank screen
-- [ ] No CORS errors in browser console
-- [ ] Adding a trade in production writes to `tradevault` DB in Atlas (not `tradevault_dev`)
-- [ ] Local dev still writes to `tradevault_dev`
-- [ ] GitHub Actions CI passes on push to `main`
-- [ ] Vercel preview deploy works on PR branches
+Retain the Atlas cluster and Vercel environment variables: both current
+environments still need them.
