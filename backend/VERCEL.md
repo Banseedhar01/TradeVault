@@ -7,9 +7,11 @@ and Python 3.12. MongoDB remains on Atlas; no data migration is required.
 
 - Backend: https://tradevault-api.vercel.app
 - Frontend: https://trade-vault-six.vercel.app
-- Initial migration uses CLI production deployments. Git auto-deployment for
-  the new backend project still needs connecting with Root Directory `backend`
-  after the migration files are committed and pushed.
+- Git deployment is configured with Root Directory `backend`, the FastAPI
+  framework preset, and Production Branch `main`.
+- To verify auto-deployment, push a change under `backend/` and confirm the
+  matching commit appears in the backend project's Deployments list. Check
+  `/health` after its status becomes Ready.
 - Render remains available for rollback during observation.
 
 Verification on November 17, 2026 found the same pre-existing account/trade

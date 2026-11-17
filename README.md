@@ -127,7 +127,7 @@ Render setup, which remains available during migration observation.
 
 | Branch | Purpose | Deploys to |
 |--------|---------|------------|
-| `main` | Production | Vercel frontend; legacy Render backend workflow retained during observation |
+| `main` | Production | Vercel frontend and backend; legacy Render workflow retained during observation |
 | `develop` | Staging / active development | Vercel preview |
 | `feature/*` | Feature branches | Vercel preview (on PR) |
 
